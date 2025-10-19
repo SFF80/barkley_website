@@ -336,7 +336,7 @@ body {
 
 /* Data Section Styles */
 .data-section {
-    padding: 4rem 0;
+    padding: 0 0 4rem 0; /* Remove top padding, keep bottom padding */
     max-width: 1000px; /* Max width for the inner content of the data section */
     margin: 0 auto; /* Center the data section within the main-content's flow */
 }
