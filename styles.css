@@ -335,11 +335,11 @@ body {
 }
 
 /* Data Section Styles */
-.data-section {
-    padding: 0 clamp(0rem, 4vw, 3rem) 4rem clamp(0rem, 4vw, 3rem); /* Responsive horizontal padding */
-    max-width: 1000px; /* Max width for the inner content of the data section */
-    margin: 0 auto; /* Center the data section within the main-content's flow */
-}
+    .data-section {
+        padding: 0 clamp(0rem, 3.6vw, 2.7rem) 4rem clamp(0rem, 3.6vw, 2.7rem); /* Responsive horizontal padding - 10% reduction */
+        max-width: 1210px; /* Max width for the inner content of the data section - 21% total increase */
+        margin: 0 auto; /* Center the data section within the main-content's flow */
+    }
 
 .data-section h2 {
     font-size: 2.5rem;
@@ -362,11 +362,11 @@ body {
 }
 
 .data-column.left-column {
-    flex: 0.95;
+    flex: 1;
 }
 
 .data-column.right-column {
-    flex: 1.05;
+    flex: 1;
 }
 
 .data-column p {
@@ -423,11 +423,11 @@ body {
     margin-top: 2rem;
 }
 
-.grey-nav-container {
-    max-width: 1000px; /* Match Knowledge section max-width */
-    margin: 0 auto 0 calc(50% - 500px - 40px); /* Force 40px left of center */
-    padding: 0 clamp(0rem, 4vw, 3rem) 0 clamp(2.1875rem, calc(4vw + 2.1875rem), 5.1875rem); /* Extra 35px left padding */
-}
+    .grey-nav-container {
+        max-width: 1210px; /* Match Knowledge section max-width - 21% total increase */
+        margin: 0 auto 0 calc(50% - 605px - 40px); /* Force 40px left of center - updated for 1210px width */
+        padding: 0 clamp(0rem, 3.6vw, 2.7rem) 0 clamp(1.96875rem, calc(3.6vw + 1.96875rem), 4.66875rem); /* Extra 35px left padding - 10% reduction */
+    }
 
 .nav-columns {
     display: flex;
