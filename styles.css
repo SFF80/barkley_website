@@ -185,7 +185,6 @@ body {
     padding: 1rem 2rem;
     display: flex;
     justify-content: flex-end;
-    align-items: center;
 }
 
 .nav-brand a {
@@ -337,23 +336,27 @@ body {
 
 /* Data Section Styles */
 .data-section {
-    display: flex;
-    gap: 3rem;
     padding: 4rem 0;
     max-width: 1000px; /* Max width for the inner content of the data section */
     margin: 0 auto; /* Center the data section within the main-content's flow */
 }
 
-.data-column {
-    flex: 1;
-}
-
-.data-column h2 {
+.data-section h2 {
     font-size: 2.5rem;
     font-weight: 300;
     color: #333;
     margin-bottom: 2rem;
     letter-spacing: 0.1em;
+    text-align: left;
+}
+
+.data-columns {
+    display: flex;
+    gap: 3rem;
+}
+
+.data-column {
+    flex: 1;
 }
 
 .data-column p {
@@ -369,11 +372,11 @@ body {
     .page-wrapper {
         padding: 0 1rem; /* Match navigation responsive padding */
     }
-    .data-section {
+    .data-columns {
         flex-direction: column;
         gap: 1.5rem;
     }
-    .data-column h2 {
+    .data-section h2 {
         font-size: 2rem;
     }
     .data-column p {
