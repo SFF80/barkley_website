@@ -353,10 +353,20 @@ body {
 .data-columns {
     display: flex;
     gap: 3rem;
+    align-items: stretch;
 }
 
 .data-column {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.data-column.left-column {
+    flex: 0.95;
+}
+
+.data-column.right-column {
+    flex: 1.05;
 }
 
 .data-column p {
@@ -381,5 +391,101 @@ body {
     }
     .data-column p {
         font-size: 1rem;
+    }
+}
+
+/* Grey Navigation Section */
+.grey-nav-section {
+    background-color: #F8F8F8;
+    padding: 3rem 0;
+    margin-top: 2rem;
+}
+
+.grey-nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.nav-columns {
+    display: flex;
+    gap: 4rem;
+}
+
+.nav-column h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-family: 'Arial', sans-serif;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-list li {
+    margin-bottom: 0.8rem;
+}
+
+.nav-list a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 400;
+    transition: color 0.3s ease;
+}
+
+.nav-list a:hover {
+    color: #666;
+}
+
+.capabilities-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.capabilities-list li {
+    border-bottom: 1px solid #E0E0E0;
+    padding: 0.8rem 0;
+}
+
+.capabilities-list li:last-child {
+    border-bottom: none;
+}
+
+.capabilities-list a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 400;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.capabilities-list a:hover {
+    color: #666;
+}
+
+.plus-icon {
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: #666;
+}
+
+/* Responsive Design for Grey Navigation */
+@media (max-width: 768px) {
+    .nav-columns {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .grey-nav-container {
+        padding: 0 1rem;
     }
 }
