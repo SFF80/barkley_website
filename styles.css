@@ -402,9 +402,9 @@ body {
 }
 
 .grey-nav-container {
-    max-width: 1200px; /* Match page-wrapper max-width for full alignment */
-    margin: 0 auto;
-    padding: 0 2rem 0 4rem; /* Add left padding to align with Knowledge text content */
+    max-width: 1000px; /* Match Knowledge section max-width */
+    margin: 0 auto 0 calc(50% - 500px - 40px); /* Force 40px left of center */
+    padding: 0 2rem; /* Match Knowledge section padding structure */
 }
 
 .nav-columns {
