@@ -24,18 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
         mainContent.classList.remove('hidden');
     }
     
-    // Add some interactive effects to the letters
-    const letters = document.querySelectorAll('.letter');
-    letters.forEach(letter => {
-        letter.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.1)';
-            this.style.transition = 'transform 0.3s ease';
-        });
-        
-        letter.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
-    });
     
 // D3.js Overlapping Circles Animation (inspired by the attached images)
 function initD3Circles() {
@@ -80,11 +68,11 @@ function initD3Circles() {
         layers: Math.floor(Math.random() * 4) + 3, // 3-6 layers per balloon
         x: Math.random() * width,
         y: height / 2 + (Math.random() - 0.5) * 200, // Center around hero text height
-        animationSpeed: Math.random() * 0.04 + 0.02, // Different expansion rates (doubled)
+        animationSpeed: Math.random() * 0.08 + 0.04, // Different expansion rates (2x faster)
         animationOffset: Math.random() * Math.PI * 2, // Different starting phases
         verticalSpeed: Math.random() * 0.02 + 0.01, // Vertical floating speed
         verticalOffset: Math.random() * Math.PI * 2, // Vertical animation phase
-        verticalAmplitude: Math.random() * 30 + 20 // Vertical floating range (20-50px)
+        verticalAmplitude: Math.random() * 30 + 26 // Vertical floating range (26-56px, 30% increase)
     }));
     
     // Create carousel movement - no force simulation needed
@@ -144,7 +132,7 @@ function initD3Circles() {
     
     // Carousel movement animation
     let carouselTime = 0;
-    const carouselSpeed = 0.2275; // Pixels per frame (30% faster than previous)
+    const carouselSpeed = 0.29575; // Pixels per frame (30% faster than previous)
     
     const animate = () => {
         carouselTime += 0.016; // ~60fps
