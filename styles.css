@@ -58,7 +58,7 @@ body {
 }
 
 .hero-text {
-    font-size: 13.5rem;
+    font-size: clamp(4rem, 12vw, 13.5rem); /* Responsive scaling: min 4rem, preferred 12vw, max 13.5rem */
     font-weight: 300;
     letter-spacing: -0.104em;
     font-family: 'Arial', sans-serif;
@@ -375,6 +375,31 @@ body {
     color: #666;
     margin-bottom: 1.5rem;
     font-family: 'Arial', sans-serif;
+}
+
+/* Responsive Hero Text Scaling */
+@media (max-width: 480px) {
+    .hero-text {
+        font-size: 5rem; /* Larger on very small screens */
+    }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    .hero-text {
+        font-size: 7rem; /* Medium size for small tablets */
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hero-text {
+        font-size: 10rem; /* Large size for tablets */
+    }
+}
+
+@media (min-width: 1025px) {
+    .hero-text {
+        font-size: 13.5rem; /* Full size for desktop */
+    }
 }
 
 /* Responsive Design for Data Section */
