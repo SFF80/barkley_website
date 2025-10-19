@@ -145,8 +145,17 @@ function initD3Circles() {
     let carouselTime = 0;
     const carouselSpeed = 0.4998175; // Pixels per frame (30% faster than previous)
     
+    // Calculate cycle time for hero animation synchronization (increased by 50%)
+    const totalDistance = width + 200 + 150; // width + off-screen distance + average circle size
+    const cycleTimeMs = (totalDistance / carouselSpeed) * 16.67 * 0.45; // 45% of full cycle (50% increase from 0.3)
+    
+    // Hero animation timing
+    let heroAnimationTime = 0;
+    let lastHeroCycle = 0;
+    
     const animate = () => {
         carouselTime += 0.016; // ~60fps
+        heroAnimationTime += 16.67; // milliseconds
         
         balloonGroups.each(function(d, i) {
             const group = d3.select(this);
@@ -183,8 +192,51 @@ function initD3Circles() {
             });
         });
         
+        // Continuous hero animation synchronized with circle cycles
+        const currentCycle = Math.floor(heroAnimationTime / cycleTimeMs);
+        if (currentCycle > lastHeroCycle) {
+            lastHeroCycle = currentCycle;
+            console.log('Triggering hero animation cycle:', currentCycle);
+            triggerHeroAnimation();
+        }
+        
         requestAnimationFrame(animate);
     };
+    
+    // Function to trigger hero animation cycle
+    function triggerHeroAnimation() {
+        const letters = document.querySelectorAll('.letter');
+        
+        // Reset all letters to white
+        letters.forEach(letter => {
+            letter.style.color = '#ffffff';
+        });
+        
+        // Start color animation after 1.5s delay (3x longer)
+        setTimeout(() => {
+            letters.forEach((letter, index) => {
+                const letterData = letter.getAttribute('data-letter');
+                let colorClass = '';
+                
+                // Assign colors based on letter
+                switch(letterData) {
+                    case 'b': colorClass = 'fadeToLightBlue'; break;
+                    case 'a': colorClass = 'fadeToSteelBlue'; break;
+                    case 'r': colorClass = 'fadeToDodgerBlue'; break;
+                    case 'k': colorClass = 'fadeToNavyBlue'; break;
+                    case 'l': colorClass = 'fadeToCrimson'; break;
+                    case 'e': colorClass = 'fadeToOrangeRed'; break;
+                    case 'y': colorClass = 'fadeToDarkOrange'; break;
+                }
+                
+                if (colorClass) {
+                    letter.style.animation = 'none';
+                    letter.offsetHeight; // Trigger reflow
+                    letter.style.animation = `${colorClass} 6s ease-out forwards`; // 3x longer (6s instead of 2s)
+                }
+            });
+        }, 1500); // 3x longer delay (1.5s instead of 0.5s)
+    }
     
     animate();
     
