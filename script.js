@@ -12,11 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
     startHeroAnimation();
     
     function startHeroAnimation() {
-        // Wait for color animation to complete (0.5s delay + 2s duration = 2.5s)
+        // Navigation fades in as hero text changes from multi-coloured to white
+        // Hero text: 0.5s delay + 2s duration = 2.5s (when it starts fading back to white)
         setTimeout(() => {
             // Show main content (navigation)
             showMainContent();
-        }, 4500); // Wait longer for text animation to complete
+        }, 2500); // Fade in navigation as hero text transitions from colors to white
     }
     
     function showMainContent() {
@@ -190,4 +191,5 @@ document.addEventListener('DOMContentLoaded', function() {
             simulation.alpha(0.1).restart();
         }, 3000);
     }
+    
 });
