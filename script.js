@@ -254,7 +254,7 @@ function initD3Circles() {
             const verticalFloat = Math.sin(verticalTime) * d.verticalAmplitude;
             d.currentY = d.y + verticalFloat;
             
-            // Handle deconstruction at right boundary (20% earlier)
+            // Handle deconstruction at right boundary (20% earlier) - consistent for all balloons
             if (d.x > width * 0.8 + 100 && !d.isDeconstructing) {
                 d.isDeconstructing = true;
                 group.selectAll('circle')
@@ -285,8 +285,8 @@ function initD3Circles() {
             let shouldConstruct = false;
             
             if (!initialLoadComplete) {
-                // Initial load: construct balloons across entire width
-                shouldConstruct = d.x > -100 && d.x < width + 100 && !d.isConstructed && !d.isDeconstructing;
+                // Initial load: construct balloons using same boundaries as subsequent loads
+                shouldConstruct = d.x > width * 0.1 && d.x < width * 0.1 + 100 && !d.isConstructed && !d.isDeconstructing;
             } else {
                 // Subsequent loads: only construct from left boundary (10% later)
                 shouldConstruct = d.x > width * 0.1 && d.x < width * 0.1 + 100 && !d.isConstructed && !d.isDeconstructing;
