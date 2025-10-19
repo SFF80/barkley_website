@@ -35,6 +35,10 @@ function initD3Circles() {
     const height = knowledgeGraphContainer.node().clientHeight;
     console.log('Canvas dimensions:', width, 'x', height);
     
+    // Speed configuration
+    const baseCarouselSpeed = 0.2625; // Base speed (30% reduction from 0.375)
+    const speedVariance = 0.4; // Variance factor for speed variation (reduced from 0.5)
+    
     // Set SVG dimensions
     svg.attr('width', width).attr('height', height);
     
@@ -82,12 +86,12 @@ function initD3Circles() {
         }
     
     // Create layered balloon-like circles
-    const nodeCount = 25; // Fewer nodes but each will have multiple layers
+    const nodeCount = 40; // More nodes for denser, more continuous stream
     const nodes = d3.range(nodeCount).map(i => ({
         id: i,
         group: Math.floor(i / 5), // Create clusters
         color: colors[i % colors.length],
-        baseSize: Math.random() * 101.4 + 50.7, // Base size for the balloon (30% larger than previous)
+        baseSize: Math.random() * 81.12 + 40.56, // Base size for the balloon (20% reduction from previous)
         layers: Math.floor(Math.random() * 4) + 3, // 3-6 layers per balloon
         x: Math.random() * width,
         y: height / 2 + (Math.random() - 0.5) * 200, // Center around hero text height
@@ -95,7 +99,8 @@ function initD3Circles() {
         animationOffset: Math.random() * Math.PI * 2, // Different starting phases
         verticalSpeed: Math.random() * 0.024 + 0.012, // Vertical floating speed (20% faster)
         verticalOffset: Math.random() * Math.PI * 2, // Vertical animation phase
-        verticalAmplitude: Math.random() * 36 + 31.2 // Vertical floating range (31.2-67.2px, 20% increase)
+        verticalAmplitude: Math.random() * 36 + 31.2, // Vertical floating range (31.2-67.2px, 20% increase)
+        horizontalSpeed: baseCarouselSpeed + (Math.random() - 0.5) * speedVariance // Individual horizontal speed with variance
     }));
     
     // Create carousel movement - no force simulation needed
@@ -155,11 +160,11 @@ function initD3Circles() {
     
     // Carousel movement animation
     let carouselTime = 0;
-    const carouselSpeed = 0.4998175; // Pixels per frame (30% faster than previous)
     
-    // Calculate cycle time for hero animation synchronization (reasonable fraction)
+    // Calculate cycle time for hero animation synchronization (using average speed)
     const totalDistance = width + 200 + 150; // width + off-screen distance + average circle size
-    const cycleTimeMs = (totalDistance / carouselSpeed) * 16.67 * 0.6; // 60% of full cycle for reasonable timing
+    const averageSpeed = baseCarouselSpeed; // Use base speed for cycle calculation
+    const cycleTimeMs = (totalDistance / averageSpeed) * 16.67 * 0.6; // 60% of full cycle for reasonable timing
     
     // Hero animation timing
     let heroAnimationTime = 0;
@@ -172,8 +177,8 @@ function initD3Circles() {
         balloonGroups.each(function(d, i) {
             const group = d3.select(this);
             
-            // Move balloons from left to right in carousel fashion (reversed direction)
-            d.x += carouselSpeed;
+            // Move balloons from left to right in carousel fashion with individual speeds
+            d.x += d.horizontalSpeed;
             
             // Add gentle vertical floating motion (like balloons in wind)
             const verticalTime = carouselTime * d.verticalSpeed + d.verticalOffset;
@@ -182,7 +187,7 @@ function initD3Circles() {
             
             // Reset position when balloon goes off screen
             if (d.x > width + 200) {
-                d.x = -d.baseSize; // Start just off-screen based on circle size
+                d.x = -100 - Math.random() * 50; // Start closer to screen edge with some randomness
                 d.y = height / 2 + (Math.random() - 0.5) * 200; // Randomize vertical position
             }
             
