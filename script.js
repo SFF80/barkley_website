@@ -42,12 +42,23 @@ function initD3Circles() {
     // Set SVG dimensions
     svg.attr('width', width).attr('height', height);
     
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        const newWidth = knowledgeGraphContainer.node().clientWidth;
-        const newHeight = knowledgeGraphContainer.node().clientHeight;
-        svg.attr('width', newWidth).attr('height', newHeight);
-    });
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const newWidth = knowledgeGraphContainer.node().clientWidth;
+            const newHeight = knowledgeGraphContainer.node().clientHeight;
+            svg.attr('width', newWidth).attr('height', newHeight);
+            
+            // Recalculate Hero text position for responsive alignment
+            const heroText = document.querySelector('.hero-text');
+            const heroTextRect = heroText.getBoundingClientRect();
+            const knowledgeGraphRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
+            const heroTextRelativeY = (heroTextRect.top + heroTextRect.bottom) / 2 - knowledgeGraphRect.top;
+            
+            // Update all nodes' Y positions to maintain alignment
+            nodes.forEach(node => {
+                node.y = heroTextRelativeY + (Math.random() - 0.5) * 60;
+            });
+        });
     
     // Sea-to-sunset color palette (from the images)
     const baseColors = [
@@ -85,6 +96,21 @@ function initD3Circles() {
             barkleyText.style.color = enhancedColor;
         }
     
+    // Get the actual Hero text position to anchor circles properly
+    const heroText = document.querySelector('.hero-text');
+    const heroTextRect = heroText.getBoundingClientRect();
+    const heroContainerRect = document.querySelector('.hero-container').getBoundingClientRect();
+    
+    // Calculate the Hero text's center relative to the knowledge-graph container
+    const heroTextCenterY = (heroTextRect.top + heroTextRect.bottom) / 2;
+    const knowledgeGraphRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
+    const heroTextRelativeY = heroTextCenterY - knowledgeGraphRect.top;
+    
+    console.log('Hero text center Y:', heroTextCenterY);
+    console.log('Knowledge graph top:', knowledgeGraphRect.top);
+    console.log('Hero text relative Y:', heroTextRelativeY);
+    console.log('Container height:', height);
+
     // Create layered balloon-like circles
     const nodeCount = 40; // More nodes for denser, more continuous stream
     const nodes = d3.range(nodeCount).map(i => ({
@@ -94,7 +120,7 @@ function initD3Circles() {
         baseSize: Math.random() * 81.12 + 40.56, // Base size for the balloon (20% reduction from previous)
         layers: Math.floor(Math.random() * 4) + 3, // 3-6 layers per balloon
         x: Math.random() * width,
-        y: height / 2 + (Math.random() - 0.5) * 200, // Center around hero text height
+        y: heroTextRelativeY + (Math.random() - 0.5) * 60, // Anchor to actual Hero text center
         animationSpeed: Math.random() * 0.08 + 0.04, // Different expansion rates (2x faster)
         animationOffset: Math.random() * Math.PI * 2, // Different starting phases
         verticalSpeed: Math.random() * 0.024 + 0.012, // Vertical floating speed (20% faster)
@@ -188,7 +214,12 @@ function initD3Circles() {
             // Reset position when balloon goes off screen
             if (d.x > width + 200) {
                 d.x = -100 - Math.random() * 50; // Start closer to screen edge with some randomness
-                d.y = height / 2 + (Math.random() - 0.5) * 200; // Randomize vertical position
+                // Recalculate Hero text position for responsive alignment
+                const heroText = document.querySelector('.hero-text');
+                const heroTextRect = heroText.getBoundingClientRect();
+                const knowledgeGraphRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
+                const heroTextRelativeY = (heroTextRect.top + heroTextRect.bottom) / 2 - knowledgeGraphRect.top;
+                d.y = heroTextRelativeY + (Math.random() - 0.5) * 60; // Anchor to actual Hero text center
             }
             
             // Update position with vertical floating
