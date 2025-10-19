@@ -17,16 +17,15 @@ body {
     margin: 0 auto; /* Center the content wrapper */
     padding: 0 2rem; /* Match navigation horizontal padding (32px) */
     position: relative; /* For absolute positioning of children */
-    min-height: 100vh; /* Ensure wrapper has height */
 }
 
 /* Hero Animation Styles */
 .hero-container {
     position: absolute; /* Changed from fixed to absolute */
-    top: 0;
+    top: 5vh; /* 5vh from top (10% reduction) */
     left: 0;
     width: 100%; /* Relative to page-wrapper */
-    height: 100vh; /* Full viewport height for hero section */
+    height: 90vh; /* 90vh height (10% reduction) */
     background-color: transparent;
     display: flex;
     justify-content: center;
@@ -39,10 +38,10 @@ body {
 
 .knowledge-graph {
     position: absolute; /* Changed from fixed to absolute */
-    top: 0;
+    top: 5vh; /* Match hero container top position */
     left: 0;
     width: 100%; /* Relative to page-wrapper */
-    height: 100vh; /* Match hero container height */
+    height: 90vh; /* Match hero container height */
     z-index: 5; /* Animation behind hero text */
     pointer-events: none;
 }
@@ -157,13 +156,12 @@ body {
 
 /* Main Content Styles */
 .main-content {
-    margin-top: 100vh; /* Push content below the hero section */
     position: relative; /* Ensure z-index works for children if needed */
     z-index: 20; /* Ensure it's above hero and animation */
     min-height: 100vh;
     opacity: 1; /* Make sure content is visible */
     transition: opacity 1s ease-in;
-    padding-top: 60px; /* Account for fixed header height */
+    padding-top: 90vh; /* Push content below the hero section (reduced height) */
 }
 
 .main-content.hidden {
