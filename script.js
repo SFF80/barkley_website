@@ -285,8 +285,8 @@ function initD3Circles() {
             let shouldConstruct = false;
             
             if (!initialLoadComplete) {
-                // Initial load: construct balloons using same boundaries as subsequent loads
-                shouldConstruct = d.x > width * 0.1 && d.x < width * 0.1 + 100 && !d.isConstructed && !d.isDeconstructing;
+                // Initial load: construct balloons across entire width but within materialization boundaries
+                shouldConstruct = d.x > width * 0.1 && d.x < width * 0.8 && !d.isConstructed && !d.isDeconstructing;
             } else {
                 // Subsequent loads: only construct from left boundary (10% later)
                 shouldConstruct = d.x > width * 0.1 && d.x < width * 0.1 + 100 && !d.isConstructed && !d.isDeconstructing;
