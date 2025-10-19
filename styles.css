@@ -18,13 +18,29 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: #ffffff;
+    background-color: transparent;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
     opacity: 1;
     transition: opacity 2s ease-out;
+}
+
+.knowledge-graph {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+}
+
+#graph-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 .hero-container.fade-out {
@@ -39,6 +55,8 @@ body {
     font-family: 'Helvetica Neue', 'Arial', sans-serif;
     text-transform: lowercase;
     white-space: nowrap;
+    position: relative;
+    z-index: 10;
 }
 
 .letter {
@@ -86,31 +104,45 @@ body {
 }
 
 @keyframes fadeToLightBlue {
-    to { color: #87CEEB; }
+    0% { color: #ffffff; }
+    50% { color: #87CEEB; }
+    100% { color: #ffffff; }
 }
 
 @keyframes fadeToSteelBlue {
-    to { color: #4682B4; }
+    0% { color: #ffffff; }
+    50% { color: #4682B4; }
+    100% { color: #ffffff; }
 }
 
 @keyframes fadeToDodgerBlue {
-    to { color: #1E90FF; }
+    0% { color: #ffffff; }
+    50% { color: #1E90FF; }
+    100% { color: #ffffff; }
 }
 
 @keyframes fadeToNavyBlue {
-    to { color: #000080; }
+    0% { color: #ffffff; }
+    50% { color: #000080; }
+    100% { color: #ffffff; }
 }
 
 @keyframes fadeToCrimson {
-    to { color: #DC143C; }
+    0% { color: #ffffff; }
+    50% { color: #DC143C; }
+    100% { color: #ffffff; }
 }
 
 @keyframes fadeToOrangeRed {
-    to { color: #FF4500; }
+    0% { color: #ffffff; }
+    50% { color: #FF4500; }
+    100% { color: #ffffff; }
 }
 
 @keyframes fadeToDarkOrange {
-    to { color: #FF8C00; }
+    0% { color: #ffffff; }
+    50% { color: #FF8C00; }
+    100% { color: #ffffff; }
 }
 
 /* Main Content Styles */
