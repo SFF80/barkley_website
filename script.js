@@ -113,21 +113,31 @@ function initD3Circles() {
 
     // Create layered balloon-like circles
     const nodeCount = 40; // More nodes for denser, more continuous stream
-    const nodes = d3.range(nodeCount).map(i => ({
-        id: i,
-        group: Math.floor(i / 5), // Create clusters
-        color: colors[i % colors.length],
-        baseSize: Math.random() * 81.12 + 40.56, // Base size for the balloon (20% reduction from previous)
-        layers: Math.floor(Math.random() * 4) + 3, // 3-6 layers per balloon
-        x: Math.random() * width,
-        y: heroTextRelativeY + (Math.random() - 0.5) * 60, // Anchor to actual Hero text center
-        animationSpeed: Math.random() * 0.08 + 0.04, // Different expansion rates (2x faster)
-        animationOffset: Math.random() * Math.PI * 2, // Different starting phases
-        verticalSpeed: Math.random() * 0.024 + 0.012, // Vertical floating speed (20% faster)
-        verticalOffset: Math.random() * Math.PI * 2, // Vertical animation phase
-        verticalAmplitude: Math.random() * 36 + 31.2, // Vertical floating range (31.2-67.2px, 20% increase)
-        horizontalSpeed: baseCarouselSpeed + (Math.random() - 0.5) * speedVariance // Individual horizontal speed with variance
-    }));
+    const nodes = d3.range(nodeCount).map(i => {
+        const baseSize = Math.random() * 81.12 + 40.56; // Base size for the balloon (20% reduction from previous)
+        const layers = Math.floor(Math.random() * 7) + 4; // 4-10 layers per balloon
+        
+        // Debug logging
+        if (isNaN(baseSize) || isNaN(layers)) {
+            console.error('NaN detected in node creation:', { i, baseSize, layers });
+        }
+        
+        return {
+            id: i,
+            group: Math.floor(i / 5), // Create clusters
+            color: colors[i % colors.length],
+            baseSize: baseSize,
+            layers: layers,
+            x: Math.random() * (width + 200) - 100, // Spread across entire width plus some off-screen
+            y: heroTextRelativeY + (Math.random() - 0.5) * 60, // Anchor to actual Hero text center
+            animationSpeed: Math.random() * 0.08 + 0.04, // Different expansion rates (2x faster)
+            animationOffset: Math.random() * Math.PI * 2, // Different starting phases
+            verticalSpeed: Math.random() * 0.024 + 0.012, // Vertical floating speed (20% faster)
+            verticalOffset: Math.random() * Math.PI * 2, // Vertical animation phase
+            verticalAmplitude: Math.random() * 36 + 31.2, // Vertical floating range (31.2-67.2px, 20% increase)
+            horizontalSpeed: baseCarouselSpeed + (Math.random() - 0.5) * speedVariance // Individual horizontal speed with variance
+        };
+    });
     
     // Create carousel movement - no force simulation needed
     // We'll handle movement manually for smooth carousel effect
@@ -135,57 +145,90 @@ function initD3Circles() {
     // Sort nodes by x position for left-to-right animation
     nodes.sort((a, b) => a.x - b.x);
     
-    // Create layered balloon circles
+    // Create layered balloon circles - simplified approach
+    console.log('Creating balloon groups for', nodes.length, 'nodes');
     const balloonGroups = svg.append('g')
         .selectAll('g')
         .data(nodes)
         .enter().append('g')
         .attr('transform', d => `translate(${d.x}, ${d.y})`)
-        .style('opacity', 0); // Start invisible for fade-in effect
+        .style('opacity', 1); // Make groups visible immediately
+    
+    console.log('Balloon groups created:', balloonGroups.size());
+    
     
     // Create multiple layers for each balloon
     balloonGroups.each(function(d, i) {
         const group = d3.select(this);
         
-        // Create layers (inner to outer)
+        // Create layers (outer to inner for construction, inner to outer for deconstruction)
         for (let layer = 0; layer < d.layers; layer++) {
-            const layerSize = d.baseSize * (0.3 + layer * 0.2); // Each layer is larger
-            const layerOpacity = 0.4 - (layer * 0.05); // Outer layers more transparent
-            const layerDelay = layer * 0.3; // Stagger the layer animation
+            // Safety check for baseSize
+            const safeBaseSize = isNaN(d.baseSize) ? 50 : d.baseSize;
+            // Curved growth function with constant 2
+            const normalizedLayer = layer / (d.layers - 1); // 0 to 1
+            const curvedGrowth = Math.pow(normalizedLayer, 1.75); // Curved function with constant 1.75
+            const layerSize = safeBaseSize * (0.3 + curvedGrowth * 0.5); // Curved layer sizing
+            const layerOpacity = Math.max(0.1, 0.4 - (layer * 0.05)); // Outer layers more transparent, minimum 0.1
+            // Construction: biggest and smallest appear first, then work inward/outward
+            const maxLayer = d.layers - 1;
+            const distanceFromEdge = Math.min(layer, maxLayer - layer);
+            const constructionDelay = distanceFromEdge * 150; // Edge layers (biggest/smallest) appear first
+            const deconstructionDelay = layer * 150; // Inner layers disappear first
+            
+            // Debug logging
+            if (isNaN(layerSize)) {
+                console.error('NaN layerSize detected:', { baseSize: d.baseSize, safeBaseSize, layer, layerSize });
+            }
             
             group.append('circle')
-                .attr('r', layerSize)
+                .attr('r', Math.max(1, layerSize)) // Ensure minimum radius of 1
                 .attr('fill', d.color)
                 .attr('opacity', 0) // Start invisible
                 .attr('class', `balloon-layer-${layer}`)
                 .datum({
                     ...d,
                     layer: layer,
-                    layerSize: layerSize,
+                    layerSize: Math.max(1, layerSize),
                     layerOpacity: layerOpacity,
-                    layerDelay: layerDelay
+                    constructionDelay: constructionDelay,
+                    deconstructionDelay: deconstructionDelay,
+                    isConstructed: false,
+                    isDeconstructing: false
                 });
         }
     });
     
-    // Left-to-right fade-in animation
-    balloonGroups
-        .transition()
-        .delay((d, i) => i * 100) // 100ms delay between each balloon
-        .duration(800)
-        .style('opacity', 1)
-        .on('start', function(d, i) {
-            // Fade in layers with staggered timing
-            const group = d3.select(this);
-            group.selectAll('circle')
-                .transition()
-                .delay((layerData, layerIndex) => layerIndex * 200)
-                .duration(600)
-                .attr('opacity', (layerData) => layerData.layerOpacity);
+    // Start all circles invisible for construction effect
+    balloonGroups.each(function(d, i) {
+        const group = d3.select(this);
+        const circles = group.selectAll('circle');
+        
+        console.log(`Balloon ${i}: ${circles.size()} circles, position (${d.x}, ${d.y}), baseSize: ${d.baseSize}`);
+        
+        // Keep circles invisible initially
+        circles.attr('opacity', 0);
+        
+        // Debug: Check if circles are being created with valid positions
+        circles.each(function(layerData, layerIndex) {
+            console.log(`  Layer ${layerIndex}: size ${layerData.layerSize}, opacity ${layerData.layerOpacity}, delay ${layerData.constructionDelay}`);
         });
+        
+        // Mark as not constructed initially
+        circles.each(function(layerData) {
+            layerData.isConstructed = false;
+        });
+        
+        // TEMPORARY: Make first few balloons visible for debugging
+        if (i < 3) {
+            console.log(`Making balloon ${i} visible for debugging`);
+            circles.attr('opacity', 0.5);
+        }
+    });
     
     // Carousel movement animation
     let carouselTime = 0;
+    let initialLoadComplete = false;
     
     // Calculate cycle time for hero animation synchronization (using average speed)
     const totalDistance = width + 200 + 150; // width + off-screen distance + average circle size
@@ -211,6 +254,19 @@ function initD3Circles() {
             const verticalFloat = Math.sin(verticalTime) * d.verticalAmplitude;
             d.currentY = d.y + verticalFloat;
             
+            // Handle deconstruction at right boundary (20% earlier)
+            if (d.x > width * 0.8 + 100 && !d.isDeconstructing) {
+                d.isDeconstructing = true;
+                group.selectAll('circle')
+                    .transition()
+                    .delay((layerData) => layerData.deconstructionDelay)
+                    .duration(600)
+                    .attr('opacity', 0)
+                    .on('end', function(layerData) {
+                        layerData.isConstructed = false;
+                    });
+            }
+            
             // Reset position when balloon goes off screen
             if (d.x > width + 200) {
                 d.x = -100 - Math.random() * 50; // Start closer to screen edge with some randomness
@@ -220,6 +276,46 @@ function initD3Circles() {
                 const knowledgeGraphRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
                 const heroTextRelativeY = (heroTextRect.top + heroTextRect.bottom) / 2 - knowledgeGraphRect.top;
                 d.y = heroTextRelativeY + (Math.random() - 0.5) * 60; // Anchor to actual Hero text center
+                d.isDeconstructing = false; // Reset deconstruction state
+                d.isConstructed = false; // Reset construction state for new cycle
+                console.log(`Recycling balloon ${d.id} to position ${d.x}`);
+            }
+            
+            // Handle construction logic
+            let shouldConstruct = false;
+            
+            if (!initialLoadComplete) {
+                // Initial load: construct balloons across entire width
+                shouldConstruct = d.x > -100 && d.x < width + 100 && !d.isConstructed && !d.isDeconstructing;
+            } else {
+                // Subsequent loads: only construct from left boundary
+                shouldConstruct = d.x > 0 && d.x < 100 && !d.isConstructed && !d.isDeconstructing;
+            }
+            
+            if (shouldConstruct) {
+                console.log(`Constructing balloon ${d.id} at position ${d.x}`);
+                d.isConstructed = true; // Prevent multiple construction attempts
+                
+                // Get all circles for this balloon
+                const circles = group.selectAll('circle');
+                console.log(`Balloon ${d.id} has ${circles.size()} circles to construct`);
+                
+                circles.each(function(layerData, layerIndex) {
+                    const circle = d3.select(this);
+                    const delay = layerData.constructionDelay || 0;
+                    const opacity = Math.max(0.1, layerData.layerOpacity || 0.3);
+                    
+                    console.log(`Layer ${layerIndex}: delay ${delay}ms, opacity ${opacity}`);
+                    
+                    circle.transition()
+                        .delay(delay)
+                        .duration(400)
+                        .attr('opacity', opacity)
+                        .on('end', function() {
+                            layerData.isConstructed = true;
+                            console.log(`Layer ${layerIndex} construction complete`);
+                        });
+                });
             }
             
             // Update position with vertical floating
@@ -234,11 +330,24 @@ function initD3Circles() {
                 const scale = 1 + Math.sin(time) * 0.3; // Scale between 0.7 and 1.3
                 const opacity = layerData.layerOpacity * (0.8 + Math.sin(time * 0.7) * 0.2);
                 
-                circle
-                    .attr('r', layerData.layerSize * scale)
-                    .attr('opacity', opacity);
+                // Safety check for layerSize
+                const safeLayerSize = isNaN(layerData.layerSize) ? 20 : layerData.layerSize;
+                const newRadius = safeLayerSize * scale;
+                
+                // Ensure radius is valid
+                if (!isNaN(newRadius) && newRadius > 0) {
+                    circle
+                        .attr('r', newRadius)
+                        .attr('opacity', Math.max(0, Math.min(1, opacity)));
+                }
             });
         });
+        
+        // Check if initial load is complete (after 3 seconds)
+        if (!initialLoadComplete && carouselTime > 3) {
+            initialLoadComplete = true;
+            console.log('Initial load complete, switching to left-to-right mode');
+        }
         
         // Continuous hero animation synchronized with circle cycles
         const currentCycle = Math.floor(heroAnimationTime / cycleTimeMs);
