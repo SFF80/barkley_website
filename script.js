@@ -143,7 +143,7 @@ function initD3Circles() {
     
     // Carousel movement animation
     let carouselTime = 0;
-    const carouselSpeed = 0.384475; // Pixels per frame (30% faster than previous)
+    const carouselSpeed = 0.4998175; // Pixels per frame (30% faster than previous)
     
     const animate = () => {
         carouselTime += 0.016; // ~60fps
@@ -161,7 +161,7 @@ function initD3Circles() {
             
             // Reset position when balloon goes off screen
             if (d.x > width + 200) {
-                d.x = -200; // Start from left side
+                d.x = -d.baseSize; // Start just off-screen based on circle size
                 d.y = height / 2 + (Math.random() - 0.5) * 200; // Randomize vertical position
             }
             
