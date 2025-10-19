@@ -425,8 +425,8 @@ body {
 
     .grey-nav-container {
         max-width: 1210px; /* Match Knowledge section max-width - 21% total increase */
-        margin: 0 auto 0 calc(50% - 605px - 40px); /* Force 40px left of center - updated for 1210px width */
-        padding: 0 clamp(0rem, 3.6vw, 2.7rem) 0 clamp(1.96875rem, calc(3.6vw + 1.96875rem), 4.66875rem); /* Extra 35px left padding - 10% reduction */
+        margin: 0 auto; /* Center the container */
+        padding: 0 clamp(0rem, 3.6vw, 2.7rem) 0 clamp(2.0625rem, calc(3.6vw + 2.0625rem), 5.0625rem); /* Extra 33px left padding - adjusted for 1210px width */
     }
 
 .nav-columns {
@@ -525,9 +525,34 @@ body {
     transition: color 0.3s ease;
 }
 
-.site-map-links a:hover {
-    color: #666;
-}
+    .site-map-links a:hover {
+        color: #666;
+    }
+
+    /* Disclaimer Section */
+    .disclaimer-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #E0E0E0;
+        text-align: right;
+    }
+
+    .disclaimer-section p {
+        font-size: 0.9rem;
+        color: #888;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .disclaimer-section a {
+        color: #888;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .disclaimer-section a:hover {
+        color: #666;
+    }
 
 /* Responsive Design for Grey Navigation */
 @media (max-width: 768px) {
