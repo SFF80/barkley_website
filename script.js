@@ -7,20 +7,22 @@ document.addEventListener('DOMContentLoaded', function() {
     startHeroAnimation();
     
     function startHeroAnimation() {
-        // Wait for all letters to finish animating (0.7s + 1s animation duration)
+        // Wait for color animation to complete (0.5s delay + 2s duration = 2.5s)
         setTimeout(() => {
+            // Show main content (navigation) at the same time hero starts fading out
+            showMainContent();
+            
             // Fade out hero container
             heroContainer.classList.add('fade-out');
             
-            // Show main content after hero fades out
+            // Hide hero container after fade-out transition completes
             setTimeout(() => {
-                showMainContent();
+                heroContainer.style.display = 'none';
             }, 2000); // Wait for fade-out transition to complete
-        }, 1700);
+        }, 2500);
     }
     
     function showMainContent() {
-        heroContainer.style.display = 'none';
         mainContent.classList.remove('hidden');
     }
     
