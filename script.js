@@ -45,7 +45,7 @@ function initD3Circles() {
     });
     
     // Sea-to-sunset color palette (from the images)
-    const colors = [
+    const baseColors = [
         '#87CEEB', // Light blue
         '#4682B4', // Steel blue
         '#1E90FF', // Dodger blue
@@ -57,6 +57,16 @@ function initD3Circles() {
         '#8A2BE2', // Blue violet
         '#FF1493', // Deep pink
     ];
+    
+    // Randomly select one color to have enhanced probability (18%)
+    const enhancedColorIndex = Math.floor(Math.random() * baseColors.length);
+    const enhancedColor = baseColors[enhancedColorIndex];
+    
+    // Create color array with enhanced probability for one random color
+    const colors = [...baseColors]; // Start with all base colors
+    colors.push(enhancedColor); // Add the enhanced color once more (18% probability)
+    
+    console.log(`Enhanced color for this session: ${enhancedColor} (index ${enhancedColorIndex})`);
     
     // Create layered balloon-like circles
     const nodeCount = 25; // Fewer nodes but each will have multiple layers
@@ -70,9 +80,9 @@ function initD3Circles() {
         y: height / 2 + (Math.random() - 0.5) * 200, // Center around hero text height
         animationSpeed: Math.random() * 0.08 + 0.04, // Different expansion rates (2x faster)
         animationOffset: Math.random() * Math.PI * 2, // Different starting phases
-        verticalSpeed: Math.random() * 0.02 + 0.01, // Vertical floating speed
+        verticalSpeed: Math.random() * 0.024 + 0.012, // Vertical floating speed (20% faster)
         verticalOffset: Math.random() * Math.PI * 2, // Vertical animation phase
-        verticalAmplitude: Math.random() * 30 + 26 // Vertical floating range (26-56px, 30% increase)
+        verticalAmplitude: Math.random() * 36 + 31.2 // Vertical floating range (31.2-67.2px, 20% increase)
     }));
     
     // Create carousel movement - no force simulation needed
@@ -132,7 +142,7 @@ function initD3Circles() {
     
     // Carousel movement animation
     let carouselTime = 0;
-    const carouselSpeed = 0.29575; // Pixels per frame (30% faster than previous)
+    const carouselSpeed = 0.384475; // Pixels per frame (30% faster than previous)
     
     const animate = () => {
         carouselTime += 0.016; // ~60fps
