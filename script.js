@@ -80,8 +80,11 @@ function initD3Circles() {
         layers: Math.floor(Math.random() * 4) + 3, // 3-6 layers per balloon
         x: Math.random() * width,
         y: height / 2 + (Math.random() - 0.5) * 200, // Center around hero text height
-        animationSpeed: Math.random() * 0.02 + 0.01, // Different expansion rates
-        animationOffset: Math.random() * Math.PI * 2 // Different starting phases
+        animationSpeed: Math.random() * 0.04 + 0.02, // Different expansion rates (doubled)
+        animationOffset: Math.random() * Math.PI * 2, // Different starting phases
+        verticalSpeed: Math.random() * 0.02 + 0.01, // Vertical floating speed
+        verticalOffset: Math.random() * Math.PI * 2, // Vertical animation phase
+        verticalAmplitude: Math.random() * 30 + 20 // Vertical floating range (20-50px)
     }));
     
     // Create carousel movement - no force simulation needed
@@ -141,7 +144,7 @@ function initD3Circles() {
     
     // Carousel movement animation
     let carouselTime = 0;
-    const carouselSpeed = 0.175; // Pixels per frame (30% slower than previous)
+    const carouselSpeed = 0.2275; // Pixels per frame (30% faster than previous)
     
     const animate = () => {
         carouselTime += 0.016; // ~60fps
@@ -152,14 +155,19 @@ function initD3Circles() {
             // Move balloons from left to right in carousel fashion (reversed direction)
             d.x += carouselSpeed;
             
+            // Add gentle vertical floating motion (like balloons in wind)
+            const verticalTime = carouselTime * d.verticalSpeed + d.verticalOffset;
+            const verticalFloat = Math.sin(verticalTime) * d.verticalAmplitude;
+            d.currentY = d.y + verticalFloat;
+            
             // Reset position when balloon goes off screen
             if (d.x > width + 200) {
                 d.x = -200; // Start from left side
                 d.y = height / 2 + (Math.random() - 0.5) * 200; // Randomize vertical position
             }
             
-            // Update position
-            group.attr('transform', `translate(${d.x}, ${d.y})`);
+            // Update position with vertical floating
+            group.attr('transform', `translate(${d.x}, ${d.currentY})`);
             
             // Breathing animation for layers
             group.selectAll('circle').each(function(layerData) {
