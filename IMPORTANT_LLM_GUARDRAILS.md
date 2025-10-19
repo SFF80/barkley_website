@@ -7,6 +7,7 @@
 - Hero container MUST NEVER fade out
 - Hero text animation: white → colors → white (stays white after)
 - Hero text z-index: 10 (always in front)
+- Hero text font: Arial, font-weight: 300 (thin), font-size: 13.5rem
 
 ### **Navigation Behavior:**
 - Navigation MUST fade in as hero text changes from multi-coloured to white
@@ -14,14 +15,16 @@
 - No Barkley logo in navigation
 
 ### **Background Animation Requirements:**
-- ALL animations must load BEHIND hero text (z-index: 1)
-- Hero text must ALWAYS be visible in front
+- ALL animations must load BEHIND hero text (z-index: 5)
+- Hero text must ALWAYS be visible in front (z-index: 10)
 - Animations reveal white hero text as colored elements pass behind
+- Current animation: D3.js layered balloon circles with breathing effect
 
 ### **Animation System:**
-- Current working animation: D3.js knowledge graph
-- Modular system in place for easy animation switching
-- Each new animation must be tested individually
+- Current working animation: D3.js layered balloon circles
+- 25 balloon groups with 3-6 layers each
+- Breathing/expanding animation with different rates per balloon
+- Vertically aligned with hero text
 
 ## 🔒 PROTECTION PROTOCOLS
 
@@ -44,11 +47,12 @@
 
 ## 📋 CURRENT WORKING STATE (DO NOT BREAK)
 
-- **Hero text**: White, visible, never fades out
+- **Hero text**: White, visible, never fades out, Arial font, weight 300, size 13.5rem
 - **Navigation**: Fades in as hero text changes from multi-coloured to white, right-justified
-- **Background**: D3.js knowledge graph behind hero text
+- **Background**: D3.js layered balloon circles behind hero text
 - **Timing**: Hero animation completes, then navigation appears
-- **Z-index**: Hero text (10), Background animation (1)
+- **Z-index**: Hero text (10), Background animation (5)
+- **Animation**: 25 balloon groups with breathing/expanding layers, vertically aligned
 
 ## ⚠️ COMMON FAILURES TO AVOID
 
@@ -57,6 +61,8 @@
 3. Putting animations in front of hero text
 4. Changing timing without approval
 5. Making assumptions about requirements
+6. Changing hero text font, weight, or size without explicit approval
+7. Breaking the layered balloon animation system
 
 ---
 **REFERENCE THIS FILE IN EVERY RESPONSE**

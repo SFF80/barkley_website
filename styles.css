@@ -51,8 +51,8 @@ body {
 .hero-text {
     font-size: 13.5rem;
     font-weight: 300;
-    letter-spacing: 0;
-    font-family: 'Helvetica Neue', 'Arial', sans-serif;
+    letter-spacing: -0.05em;
+    font-family: 'Arial', sans-serif;
     text-transform: lowercase;
     white-space: nowrap;
     position: relative;

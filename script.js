@@ -76,53 +76,42 @@ function initD3Circles() {
         id: i,
         group: Math.floor(i / 5), // Create clusters
         color: colors[i % colors.length],
-        baseSize: Math.random() * 60 + 30, // Base size for the balloon
+        baseSize: Math.random() * 101.4 + 50.7, // Base size for the balloon (30% larger than previous)
         layers: Math.floor(Math.random() * 4) + 3, // 3-6 layers per balloon
         x: Math.random() * width,
-        y: Math.random() * height,
+        y: height / 2 + (Math.random() - 0.5) * 200, // Center around hero text height
         animationSpeed: Math.random() * 0.02 + 0.01, // Different expansion rates
         animationOffset: Math.random() * Math.PI * 2 // Different starting phases
     }));
     
-    // Create force simulation for organic clustering
-    const simulation = d3.forceSimulation(nodes)
-        .force('charge', d3.forceManyBody()
-            .strength(-300) // Stronger repulsion for better clustering
-            .distanceMax(400)
-        )
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide()
-            .radius(d => d.size * 0.8) // Allow some overlap
-        )
-        .force('x', d3.forceX(d => {
-            // Create two main clusters like in the images
-            if (d.group === 0) return width * 0.3;
-            if (d.group === 1) return width * 0.7;
-            return width / 2;
-        }).strength(0.1))
-        .force('y', d3.forceY(height / 2).strength(0.05));
+    // Create carousel movement - no force simulation needed
+    // We'll handle movement manually for smooth carousel effect
+    
+    // Sort nodes by x position for left-to-right animation
+    nodes.sort((a, b) => a.x - b.x);
     
     // Create layered balloon circles
     const balloonGroups = svg.append('g')
         .selectAll('g')
         .data(nodes)
         .enter().append('g')
-        .attr('transform', d => `translate(${d.x}, ${d.y})`);
+        .attr('transform', d => `translate(${d.x}, ${d.y})`)
+        .style('opacity', 0); // Start invisible for fade-in effect
     
     // Create multiple layers for each balloon
-    balloonGroups.each(function(d) {
+    balloonGroups.each(function(d, i) {
         const group = d3.select(this);
         
         // Create layers (inner to outer)
         for (let layer = 0; layer < d.layers; layer++) {
             const layerSize = d.baseSize * (0.3 + layer * 0.2); // Each layer is larger
             const layerOpacity = 0.4 - (layer * 0.05); // Outer layers more transparent
-            const layerDelay = layer * 0.5; // Stagger the animation
+            const layerDelay = layer * 0.3; // Stagger the layer animation
             
             group.append('circle')
                 .attr('r', layerSize)
                 .attr('fill', d.color)
-                .attr('opacity', layerOpacity)
+                .attr('opacity', 0) // Start invisible
                 .attr('class', `balloon-layer-${layer}`)
                 .datum({
                     ...d,
@@ -134,17 +123,48 @@ function initD3Circles() {
         }
     });
     
-    // Animation loop for expanding/contracting layers
-    let animationTime = 0;
+    // Left-to-right fade-in animation
+    balloonGroups
+        .transition()
+        .delay((d, i) => i * 100) // 100ms delay between each balloon
+        .duration(800)
+        .style('opacity', 1)
+        .on('start', function(d, i) {
+            // Fade in layers with staggered timing
+            const group = d3.select(this);
+            group.selectAll('circle')
+                .transition()
+                .delay((layerData, layerIndex) => layerIndex * 200)
+                .duration(600)
+                .attr('opacity', (layerData) => layerData.layerOpacity);
+        });
+    
+    // Carousel movement animation
+    let carouselTime = 0;
+    const carouselSpeed = 0.175; // Pixels per frame (30% slower than previous)
+    
     const animate = () => {
-        animationTime += 0.016; // ~60fps
+        carouselTime += 0.016; // ~60fps
         
-        balloonGroups.each(function(d) {
+        balloonGroups.each(function(d, i) {
             const group = d3.select(this);
             
+            // Move balloons from left to right in carousel fashion (reversed direction)
+            d.x += carouselSpeed;
+            
+            // Reset position when balloon goes off screen
+            if (d.x > width + 200) {
+                d.x = -200; // Start from left side
+                d.y = height / 2 + (Math.random() - 0.5) * 200; // Randomize vertical position
+            }
+            
+            // Update position
+            group.attr('transform', `translate(${d.x}, ${d.y})`);
+            
+            // Breathing animation for layers
             group.selectAll('circle').each(function(layerData) {
                 const circle = d3.select(this);
-                const time = animationTime * d.animationSpeed + d.animationOffset + layerData.layerDelay;
+                const time = carouselTime * d.animationSpeed + d.animationOffset + layerData.layerDelay;
                 
                 // Create breathing/expanding effect
                 const scale = 1 + Math.sin(time) * 0.3; // Scale between 0.7 and 1.3
@@ -160,23 +180,6 @@ function initD3Circles() {
     };
     
     animate();
-    
-    // Update positions on simulation tick
-    simulation.on('tick', () => {
-        balloonGroups
-            .attr('transform', d => `translate(${d.x}, ${d.y})`);
-    });
-    
-    // Add gentle movement to keep animation alive
-    setInterval(() => {
-        nodes.forEach(node => {
-            if (Math.random() < 0.15) {
-                node.vx += (Math.random() - 0.5) * 0.3;
-                node.vy += (Math.random() - 0.5) * 0.3;
-            }
-        });
-        simulation.alpha(0.1).restart();
-    }, 4000);
     
     console.log('D3 circles animation initialized successfully');
 }
