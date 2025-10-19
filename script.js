@@ -30,8 +30,9 @@ function initD3Circles() {
     console.log('initD3Circles function called');
     const svg = d3.select('#graph-svg');
     console.log('SVG selected:', svg);
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const knowledgeGraphContainer = d3.select('.knowledge-graph');
+    const width = knowledgeGraphContainer.node().clientWidth;
+    const height = knowledgeGraphContainer.node().clientHeight;
     console.log('Canvas dimensions:', width, 'x', height);
     
     // Set SVG dimensions
@@ -39,8 +40,8 @@ function initD3Circles() {
     
     // Handle window resize
     window.addEventListener('resize', () => {
-        const newWidth = window.innerWidth;
-        const newHeight = window.innerHeight;
+        const newWidth = knowledgeGraphContainer.node().clientWidth;
+        const newHeight = knowledgeGraphContainer.node().clientHeight;
         svg.attr('width', newWidth).attr('height', newHeight);
     });
     
