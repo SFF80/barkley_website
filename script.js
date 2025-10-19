@@ -114,7 +114,7 @@ function initD3Circles() {
     // Create layered balloon-like circles
     const nodeCount = 40; // More nodes for denser, more continuous stream
     const nodes = d3.range(nodeCount).map(i => {
-        const baseSize = Math.random() * 81.12 + 40.56; // Base size for the balloon (20% reduction from previous)
+        const baseSize = Math.random() * 89.23 + 44.62; // Base size for the balloon (10% increase from previous)
         const layers = Math.floor(Math.random() * 7) + 4; // 4-10 layers per balloon
         
         // Debug logging
@@ -288,8 +288,8 @@ function initD3Circles() {
                 // Initial load: construct balloons across entire width
                 shouldConstruct = d.x > -100 && d.x < width + 100 && !d.isConstructed && !d.isDeconstructing;
             } else {
-                // Subsequent loads: only construct from left boundary
-                shouldConstruct = d.x > 0 && d.x < 100 && !d.isConstructed && !d.isDeconstructing;
+                // Subsequent loads: only construct from left boundary (10% later)
+                shouldConstruct = d.x > width * 0.1 && d.x < width * 0.1 + 100 && !d.isConstructed && !d.isDeconstructing;
             }
             
             if (shouldConstruct) {
@@ -309,7 +309,7 @@ function initD3Circles() {
                     
                     circle.transition()
                         .delay(delay)
-                        .duration(400)
+                        .duration(720)
                         .attr('opacity', opacity)
                         .on('end', function() {
                             layerData.isConstructed = true;
