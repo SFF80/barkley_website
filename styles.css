@@ -15,7 +15,7 @@ body {
 .page-wrapper {
     max-width: 1200px; /* Max width of the content area */
     margin: 0 auto; /* Center the content wrapper */
-    padding: 0 2rem; /* Match navigation horizontal padding (32px) */
+    padding: 0 clamp(0rem, 4vw, 3rem); /* Responsive padding: 0 on small, scales to max 3rem */
     position: relative; /* For absolute positioning of children */
 }
 
@@ -182,7 +182,7 @@ body {
 .nav {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 1rem clamp(0rem, 4vw, 3rem); /* Match page-wrapper responsive padding */
     display: flex;
     justify-content: flex-end;
 }
@@ -336,7 +336,7 @@ body {
 
 /* Data Section Styles */
 .data-section {
-    padding: 0 0 4rem 0; /* Remove top padding, keep bottom padding */
+    padding: 0 clamp(0rem, 4vw, 3rem) 4rem clamp(0rem, 4vw, 3rem); /* Responsive horizontal padding */
     max-width: 1000px; /* Max width for the inner content of the data section */
     margin: 0 auto; /* Center the data section within the main-content's flow */
 }
@@ -404,9 +404,6 @@ body {
 
 /* Responsive Design for Data Section */
 @media (max-width: 768px) {
-    .page-wrapper {
-        padding: 0 1rem; /* Match navigation responsive padding */
-    }
     .data-columns {
         flex-direction: column;
         gap: 1.5rem;
@@ -429,7 +426,7 @@ body {
 .grey-nav-container {
     max-width: 1000px; /* Match Knowledge section max-width */
     margin: 0 auto 0 calc(50% - 500px - 40px); /* Force 40px left of center */
-    padding: 0 2rem; /* Match Knowledge section padding structure */
+    padding: 0 clamp(0rem, 4vw, 3rem) 0 clamp(2.1875rem, calc(4vw + 2.1875rem), 5.1875rem); /* Extra 35px left padding */
 }
 
 .nav-columns {
@@ -537,10 +534,6 @@ body {
     .nav-columns {
         flex-direction: column;
         gap: 2rem;
-    }
-    
-    .grey-nav-container {
-        padding: 0 1rem;
     }
     
     .site-map-links {
