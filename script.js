@@ -67,7 +67,19 @@ function initD3Circles() {
     const colors = [...baseColors]; // Start with all base colors
     colors.push(enhancedColor); // Add the enhanced color once more (18% probability)
     
-    console.log(`Enhanced color for this session: ${enhancedColor} (index ${enhancedColorIndex})`);
+        console.log(`Enhanced color for this session: ${enhancedColor} (index ${enhancedColorIndex})`);
+
+        // Assign the enhanced color to the KNOWLEDGE title
+        const knowledgeTitle = document.querySelector('.data-section h2');
+        if (knowledgeTitle) {
+            knowledgeTitle.style.color = enhancedColor;
+        }
+
+        // Assign the same enhanced color to the bold 'Barkley' text
+        const barkleyText = document.querySelector('.data-column.right-column strong');
+        if (barkleyText) {
+            barkleyText.style.color = enhancedColor;
+        }
     
     // Create layered balloon-like circles
     const nodeCount = 25; // Fewer nodes but each will have multiple layers
@@ -145,9 +157,9 @@ function initD3Circles() {
     let carouselTime = 0;
     const carouselSpeed = 0.4998175; // Pixels per frame (30% faster than previous)
     
-    // Calculate cycle time for hero animation synchronization (increased by 50%)
+    // Calculate cycle time for hero animation synchronization (reasonable fraction)
     const totalDistance = width + 200 + 150; // width + off-screen distance + average circle size
-    const cycleTimeMs = (totalDistance / carouselSpeed) * 16.67 * 0.45; // 45% of full cycle (50% increase from 0.3)
+    const cycleTimeMs = (totalDistance / carouselSpeed) * 16.67 * 0.6; // 60% of full cycle for reasonable timing
     
     // Hero animation timing
     let heroAnimationTime = 0;
@@ -207,35 +219,38 @@ function initD3Circles() {
     function triggerHeroAnimation() {
         const letters = document.querySelectorAll('.letter');
         
-        // Reset all letters to white
-        letters.forEach(letter => {
-            letter.style.color = '#ffffff';
-        });
-        
-        // Start color animation after 1.5s delay (3x longer)
-        setTimeout(() => {
+        // Alternate between white and colored cycles
+        if (lastHeroCycle % 2 === 0) {
+            // Even cycles: Smoothly fade to white and stay white for the full cycle
+            letters.forEach(letter => {
+                letter.style.transition = 'color 1.5s ease-out';
+                letter.style.color = '#ffffff';
+                letter.style.animation = 'none';
+            });
+        } else {
+            // Odd cycles: Smoothly fade to colors and stay colored for the full cycle
             letters.forEach((letter, index) => {
                 const letterData = letter.getAttribute('data-letter');
-                let colorClass = '';
+                let targetColor = '';
                 
                 // Assign colors based on letter
                 switch(letterData) {
-                    case 'b': colorClass = 'fadeToLightBlue'; break;
-                    case 'a': colorClass = 'fadeToSteelBlue'; break;
-                    case 'r': colorClass = 'fadeToDodgerBlue'; break;
-                    case 'k': colorClass = 'fadeToNavyBlue'; break;
-                    case 'l': colorClass = 'fadeToCrimson'; break;
-                    case 'e': colorClass = 'fadeToOrangeRed'; break;
-                    case 'y': colorClass = 'fadeToDarkOrange'; break;
+                    case 'b': targetColor = '#87CEEB'; break; // Light blue
+                    case 'a': targetColor = '#4682B4'; break; // Steel blue
+                    case 'r': targetColor = '#1E90FF'; break; // Dodger blue
+                    case 'k': targetColor = '#000080'; break; // Navy blue
+                    case 'l': targetColor = '#DC143C'; break; // Crimson
+                    case 'e': targetColor = '#FF4500'; break; // Orange red
+                    case 'y': targetColor = '#FF8C00'; break; // Dark orange
                 }
                 
-                if (colorClass) {
-                    letter.style.animation = 'none';
-                    letter.offsetHeight; // Trigger reflow
-                    letter.style.animation = `${colorClass} 6s ease-out forwards`; // 3x longer (6s instead of 2s)
+                if (targetColor) {
+                    // Create smooth transition from white to color (3x longer)
+                    letter.style.transition = 'color 1.5s ease-out';
+                    letter.style.color = targetColor;
                 }
             });
-        }, 1500); // 3x longer delay (1.5s instead of 0.5s)
+        }
     }
     
     animate();
