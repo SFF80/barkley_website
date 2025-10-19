@@ -22,10 +22,10 @@ body {
 /* Hero Animation Styles */
 .hero-container {
     position: absolute; /* Changed from fixed to absolute */
-    top: 5vh; /* 5vh from top (10% reduction) */
+    top: 0vh; /* Remove top gap completely */
     left: 0;
     width: 100%; /* Relative to page-wrapper */
-    height: 90vh; /* 90vh height (10% reduction) */
+    height: 75vh; /* Further reduced height to minimize bottom gap */
     background-color: transparent;
     display: flex;
     justify-content: center;
@@ -38,10 +38,10 @@ body {
 
 .knowledge-graph {
     position: absolute; /* Changed from fixed to absolute */
-    top: 5vh; /* Match hero container top position */
+    top: 0vh; /* Match hero container top position */
     left: 0;
     width: 100%; /* Relative to page-wrapper */
-    height: 90vh; /* Match hero container height */
+    height: 75vh; /* Match hero container height */
     z-index: 5; /* Animation behind hero text */
     pointer-events: none;
 }
@@ -161,7 +161,7 @@ body {
     min-height: 100vh;
     opacity: 1; /* Make sure content is visible */
     transition: opacity 1s ease-in;
-    padding-top: 90vh; /* Push content below the hero section (reduced height) */
+    padding-top: 75vh; /* Push content below the hero section (match new height) */
 }
 
 .main-content.hidden {
@@ -442,39 +442,29 @@ body {
     color: #666;
 }
 
-.capabilities-sub-columns {
+/* Capabilities Section */
+.capabilities-links {
     display: flex;
-    gap: 2.6rem; /* 30% increase from 2rem */
+    gap: 2rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 
-.capabilities-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex: 1;
+.data-column.left-column h3 {
+    margin-bottom: 3rem; /* Double the vertical padding between Capabilities title and list */
 }
 
-.capabilities-list li {
-    border-bottom: 1px solid #E0E0E0;
-    padding: 0.8rem 0;
-}
-
-.capabilities-list li:last-child {
-    border-bottom: none !important;
-}
-
-.capabilities-list a {
+.capabilities-links a {
     color: #333;
     text-decoration: none;
     font-size: 1rem;
     font-weight: 400;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     transition: color 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.capabilities-list a:hover {
+.capabilities-links a:hover {
     color: #666;
 }
 
@@ -486,7 +476,7 @@ body {
 
 /* Site Map Section */
 .site-map-section {
-    margin-top: 3rem;
+    margin-top: 1.5rem; /* Halved from 3rem to reduce padding between Capabilities and Site Map */
     padding-top: 2rem;
     border-top: 1px solid #E0E0E0;
 }
@@ -533,3 +523,5 @@ body {
         gap: 1rem;
     }
 }
+
+
