@@ -470,6 +470,56 @@
       return;
     }
 
+    if (opts.mode === 'type4') {
+      // Type 4: Identical to Type 2 but with one balloon in yellow, all others white
+      const yellow = '#FFFF00'; // Yellow color
+      const white = '#FFFFFF'; // White color
+      
+      // Calculate center of balloon cluster
+      const centerX = nodes.reduce((sum, n) => sum + n.x, 0) / nodes.length;
+      const centerY = nodes.reduce((sum, n) => sum + n.y, 0) / nodes.length;
+      
+      nodes.forEach((n, i) => { 
+        if (i === 0) {
+          // Make the first balloon yellow, max size, position in center, and move upwards
+          n.color = yellow;
+          n.baseSize = Math.max(...nodes.map(node => node.baseSize)); // Max size
+          n.x = centerX; // Center position
+          n.y = centerY; // Center position
+          // Reverse vertical velocity to move upwards instead of downwards
+          n.vy = -Math.abs(n.vy); // Force upward movement
+        } else {
+          // All other balloons white
+          n.color = white; 
+        }
+      });
+      
+      const g = svg.append('g');
+      // Sort nodes so yellow balloon (index 0) is rendered last (on top)
+      const sortedNodes = [...nodes].sort((a, b) => {
+        if (a.color === yellow) return 1; // Yellow balloon goes last
+        if (b.color === yellow) return -1;
+        return 0;
+      });
+      const groups = sortedNodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
+
+      const opacityFn = (layer, total) => clamp(0.3 + (0.6 - 0.1 * layer), 0.2, 0.8); // More visible opacity range
+      const delays = { constructStep: 150, constructDuration: 720 };
+      groups.forEach((gr, idx) => appendLayers(gr, sortedNodes[idx], opts.curvedExponent, opacityFn, delays));
+
+      const state = {
+        groups, nodes: sortedNodes,
+        width: dims.width, height: dims.height,
+        introDurationMs: opts.introDurationMs,
+        keepDrift: !!opts.keepDrift,
+        frozen: false,
+        microDrift: false,
+        t0: performance.now()
+      };
+      requestAnimationFrame(() => animateRAF(state));
+      return;
+    }
+
     // Colored type2
     nodes.forEach((n, i) => { n.color = colorPool[i % colorPool.length]; });
     const g = svg.append('g');

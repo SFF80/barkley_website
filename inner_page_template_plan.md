@@ -62,14 +62,58 @@ Animation timeline (current implementation):
 3. 3-5s: Gradual slowdown to 10% of original speed
 4. ≥5s: Freeze—maintain very slow movement or stop completely
 
-Transparency modes (Type 1, Type 2, and Type 3):
+Transparency modes (Type 1, Type 2, Type 3, and Type 4):
 - `mode: "colored"` → normal sea-to-sunset palette with 20-80% opacity range
 - `mode: "transparent"` → white fill with 10-80% opacity range (increasing transparency from outer to inner layers)
 - `mode: "type3"` → inverted transparency with solid background color and bubble "holes"
+- `mode: "type4"` → one yellow balloon (max size, centered, moving upwards) with all others white
 - Type 1 & 2: Light grey stroke for visibility of circle boundaries
 - Type 1 & 2: Multiple concentric circles with decreasing opacity (union effect)
 - Type 3: Bubbles create progressively transparent "holes" in solid background
+- Type 4: One prominent yellow balloon rendered in front, moving vertically upwards
 - Optional: accept a `backgroundImageUrl` style on `.inner-hero` with `background-size: cover; background-position: center;`
+
+### Type 4 Construction Plan (Yellow Sun Balloon)
+Type 4 creates a single prominent yellow balloon that acts as a "rising sun" among white balloons, with unique positioning and movement behavior.
+
+**Core Concept:**
+- **One yellow balloon**: Bright yellow (`#FFFF00`) color, maximum size, positioned at cluster center
+- **White background balloons**: All other balloons are white (`#FFFFFF`) with normal random sizes and positions
+- **Upward movement**: Yellow balloon moves vertically upwards (opposite to gravitational pull)
+- **Front rendering**: Yellow balloon is rendered in front of all other balloons (highest z-index)
+- **Center positioning**: Yellow balloon is positioned at the geometric center of the balloon cluster
+
+**Implementation Method:**
+1. **Color assignment**: First balloon (index 0) gets yellow, all others get white
+2. **Size calculation**: Yellow balloon uses maximum `baseSize` from all balloons
+3. **Center positioning**: Calculate cluster center as average of all balloon positions
+4. **Upward velocity**: Force yellow balloon's vertical velocity to be negative (upward)
+5. **Rendering order**: Sort balloons so yellow balloon renders last (on top)
+
+**Visual Effect:**
+- **Prominent focal point**: One bright yellow balloon dominates the visual space
+- **Rising sun metaphor**: Yellow balloon moves upwards like a rising sun
+- **Clean contrast**: White balloons create a clean, minimalist background
+- **Clear hierarchy**: Yellow balloon is clearly the most important element
+
+**Technical Implementation:**
+- **Center calculation**: `centerX = average of all balloon X positions`, `centerY = average of all balloon Y positions`
+- **Size assignment**: `yellowBalloon.baseSize = Math.max(...allBalloons.map(b => b.baseSize))`
+- **Velocity override**: `yellowBalloon.vy = -Math.abs(yellowBalloon.vy)` (force upward)
+- **Rendering order**: Sort balloons array with yellow balloon last for front rendering
+
+**Configuration Options:**
+```js
+{
+  mode: 'type4',
+  yellowColor: '#FFFF00',        // Bright yellow color
+  whiteColor: '#FFFFFF',         // White color for other balloons
+  centerPositioning: true,       // Position yellow balloon at cluster center
+  maxSize: true,                 // Use maximum size for yellow balloon
+  upwardMovement: true,          // Move yellow balloon upwards
+  frontRendering: true           // Render yellow balloon in front
+}
+```
 
 ### Type 3 Construction Plan (Inverted Transparency)
 Type 3 creates bubbles of translucency→transparency in a solid background color, where overlapping bubbles become MORE transparent (not less).
@@ -136,7 +180,7 @@ Public API (config object in `initInnerBalloons(options)`):
   curvedExponent: 1.75,          // Non-linear scaling for internal layers
   introDurationMs: 6000,         // Total time before freeze (6 seconds)
   constructWindowPct: [0.14,0.86], // Construction window (right half)
-  mode: 'type1' | 'type2' | 'transparent' | 'type3', // Type 1&2 identical, Type 3 inverted transparency
+  mode: 'type1' | 'type2' | 'transparent' | 'type3' | 'type4', // Type 1&2 identical, Type 3 inverted transparency, Type 4 yellow sun
   backgroundImageUrl: undefined,  // Set on .inner-hero when provided
   keepDrift: false,              // Whether to continue movement after freeze
   gravityStrength: 1.0,          // Very high gravity for orbital mechanics
@@ -148,7 +192,14 @@ Public API (config object in `initInnerBalloons(options)`):
   backgroundColor: '#ffffff',     // Solid background color for Type 3
   bubbleOpacity: 0.8,            // Starting opacity for single bubbles
   transparencySteps: 16,         // Number of steps to total transparency (flattened curve)
-  blendMode: 'multiply'          // SVG blend mode for opacity calculation
+  blendMode: 'multiply',         // SVG blend mode for opacity calculation
+  // Type 4 specific options:
+  yellowColor: '#FFFF00',        // Bright yellow color for sun balloon
+  whiteColor: '#FFFFFF',         // White color for background balloons
+  centerPositioning: true,       // Position yellow balloon at cluster center
+  maxSize: true,                 // Use maximum size for yellow balloon
+  upwardMovement: true,          // Move yellow balloon upwards
+  frontRendering: true           // Render yellow balloon in front
 }
 ```
 
@@ -173,15 +224,17 @@ Accessibility:
 ## JS Summary
 - Function `initInnerBalloons(options)` implemented in `animations/inner-balloons.js`
 - Both Type 1 and Type 2 use identical `type2Swirl()` function for consistent behavior
+- Type 4 uses special positioning and movement logic for yellow sun balloon
 - Orbital mechanics with single gravitational body below center (gravity strength 1.0)
 - Unique velocity and trajectory for each balloon (0.5-3.5 random velocity + random direction)
-- Combined motion: 70% orbital + 30% random trajectory
+- Combined motion: 70% orbital + 30% random trajectory (except Type 4 yellow balloon moves upwards)
 - Continuous repulsive forces between balloons (0.02 strength)
 - Collision physics with boundary bouncing and 20% momentum loss
 - Zero gravity phase (0-3s) then gradual slowdown (3-5s) then freeze
 - Materialization window: 0-1.5 seconds for all balloons
 - Multiple concentric circles with decreasing opacity (union effect)
-- Sea-to-sunset color palette with one randomly enhanced color per load
+- Sea-to-sunset color palette with one randomly enhanced color per load (Type 1&2)
+- Type 4: One yellow balloon (max size, centered, upward movement) with white background balloons
 - Vertical anchoring via `getBoundingClientRect()` on header title
 - `freeze()` helper stops RAF and transitions at `introDurationMs`
 
@@ -211,9 +264,11 @@ Accessibility:
 - Zero gravity phase (0-3s) then gradual slowdown (3-5s) then freeze
 - Both Type 1 and Type 2 modes behave identically
 - Type 3 mode creates inverted transparency with solid background and bubble "holes"
+- Type 4 mode: One yellow balloon (max size, centered, upward movement) with white background balloons
 - Transparent mode reveals background image with white fill and light grey strokes
 - Colored mode uses sea-to-sunset palette with 20-80% opacity range
 - Type 3 mode: Bubbles create progressively transparent holes in solid background color
+- Type 4 mode: Yellow balloon rendered in front, moves upwards, positioned at cluster center
 - Blue section renders with correct spacing and responsive behavior
 - Footer present and consistent
 

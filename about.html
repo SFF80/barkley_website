@@ -93,6 +93,17 @@
           keepDrift: false,
           introDurationMs: 6000
         });
+      } else if (which === 'type4') {
+        // Type 4: Identical to Type 2 but with one balloon in light orange (sun color)
+        initInnerBalloons({
+          mode: 'type4',
+          containerSelector: '.inner-balloons',
+          svgId: 'inner-balloons-svg',
+          nodeCount: 8,
+          constructWindowPct: [0.5, 0.95],
+          keepDrift: false,
+          introDurationMs: 6000
+        });
       } else {
         // Section 2 (header) transparent: only 5 holes in right half, 1.5s intro
         initInnerBalloons({
@@ -114,6 +125,7 @@
           if (e.key === '1') loadMode('type1');
           else if (e.key === '2') loadMode('type2');
           else if (e.key === '3') loadMode('type3');
+          else if (e.key === '4') loadMode('type4');
         });
     });
   </script>
