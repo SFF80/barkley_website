@@ -55,38 +55,43 @@
   }
 
   function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed) {
-    // Random number of balloons between 10-15
-    const actualCount = Math.floor(Math.random() * 6) + 10; // 10-15 balloons
+    // Random number of balloons between 100-150 (10x increase)
+    const actualCount = Math.floor(Math.random() * 51) + 100; // 100-150 balloons
     const nodes = [];
     for (let i = 0; i < actualCount; i++) {
       const layers = Math.floor(Math.random() * (rangeLayers[1] - rangeLayers[0] + 1)) + rangeLayers[0];
-      const baseSize = Math.random() * 43.5 + 21.75; // 30% increase from previous size
+      const baseSize = Math.random() * 23.49 + 11.75; // 70% reduction in max radius size
       const x = (Math.random() * (constructWindowPct[1] - constructWindowPct[0]) + constructWindowPct[0]) * width;
       
       // Add velocity and vector properties for different movement directions
-      const velocity = Math.random() * 1.0 + 0.5; // Random velocity between 0.5-1.5 (much more movement)
+      const velocity = Math.random() * 2.5 + 1.5; // Increased velocity on materialization (1.5-4.0)
       const angle = Math.random() * Math.PI * 2; // Random direction (0-2π radians)
       const vx = Math.cos(angle) * velocity; // X component of velocity
       const vy = Math.sin(angle) * velocity; // Y component of velocity
+      
+      // Remove swirl trajectory properties - no more circular motion
       
       nodes.push({
         id: i,
         layers,
         baseSize,
         x,
-        y: yCenter + (Math.random() - 0.5) * clamp(height * 0.2, 40, 120),
+        y: yCenter + (Math.random() - 0.5) * clamp(height * 0.1, 20, 60) + (height * 0.2), // Match originalY calculation
         animationSpeed: Math.random() * 0.08 + 0.04,
         animationOffset: Math.random() * Math.PI * 2,
         verticalSpeed: Math.random() * 0.024 + 0.012,
         verticalOffset: Math.random() * Math.PI * 2,
-        verticalAmplitude: Math.random() * 36 + 31.2,
+        verticalAmplitude: Math.random() * 43.2 + 37.44, // 20% increase in vertical movement
         horizontalSpeed: baseSpeed + (Math.random() - 0.5) * baseSpeed * 0.6,
         isConstructed: false,
         // New velocity and vector properties
         velocity: velocity,
         vx: vx, // X velocity component
         vy: vy, // Y velocity component
-        angle: angle // Direction angle in radians
+        angle: angle, // Direction angle in radians
+        collisionCooldown: 0, // Collision cooldown counter
+        originalX: x, // Store original position
+        originalY: yCenter + (Math.random() - 0.5) * clamp(height * 0.1, 20, 60) + (height * 0.2) // Reduced variance in materialization point
       });
     }
     return nodes;
@@ -95,25 +100,39 @@
   function appendLayers(group, d, curvedExponent, opacityFn, delays) {
     // Random materialization start time within 1.5 second window
     const materializationStart = Math.random() * 1500; // 0-1.5 seconds
-    // Random materialization duration between 0.65-1.95 seconds (30% slower)
-    const materializationDuration = Math.random() * 1300 + 650; // 0.65-1.95 seconds
     
     for (let layer = 0; layer < d.layers; layer++) {
       const norm = d.layers <= 1 ? 1 : layer / (d.layers - 1);
-      const growth = Math.pow(norm, curvedExponent);
-      const r = Math.max(1, d.baseSize * (0.3 + growth * 0.5));
-      const opacity = opacityFn(layer, d.layers);
-      const constructionDelay = materializationStart + (Math.min(layer, d.layers - 1 - layer)) * delays.constructStep;
+      // Use landing page non-linear scaling method
+      const curvedGrowth = Math.pow(norm, 1.75); // Curved function with constant 1.75 (from landing page)
+      const r = Math.max(1, d.baseSize * (0.3 + curvedGrowth * 0.5)); // Curved layer sizing (from landing page)
+      const layerOpacity = Math.max(0.1, 0.4 - (layer * 0.05)); // Outer layers more transparent, minimum 0.1 (from landing page)
+      
+      // Landing page construction method: biggest and smallest appear first, then work inward/outward
+      const maxLayer = d.layers - 1;
+      const distanceFromEdge = Math.min(layer, maxLayer - layer);
+      const constructionDelay = materializationStart + (distanceFromEdge * 150); // Edge layers appear first
+      const deconstructionDelay = layer * 150; // Inner layers disappear first
+      
       group.append('circle')
         .attr('r', 0)
         .attr('fill', d.color)
         .attr('opacity', 0)
         .attr('class', `layer-${layer}`)
+        .datum({
+          layer: layer,
+          layerSize: r,
+          layerOpacity: layerOpacity,
+          constructionDelay: constructionDelay,
+          deconstructionDelay: deconstructionDelay,
+          isConstructed: false,
+          isDeconstructing: false
+        })
         .transition()
         .delay(constructionDelay)
-        .duration(materializationDuration)
+        .duration(720) // Landing page duration
         .attr('r', r)
-        .attr('opacity', opacity)
+        .attr('opacity', layerOpacity)
         .end?.()
         .catch(() => {});
     }
@@ -146,7 +165,7 @@
       }
     }
 
-    // Add weak repulsive force between balloons
+    // Add continuous repulsive force between balloons
     nodes.forEach((d, i) => {
       let repulsiveForceX = 0;
       let repulsiveForceY = 0;
@@ -156,12 +175,19 @@
           const dx = d.x - other.x;
           const dy = d.y - other.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          const minDistance = (d.baseSize + other.baseSize) * 0.6; // Minimum distance between balloons
+          const minDistance = (d.baseSize + other.baseSize) * 0.8; // Reduced minimum distance
           
           if (distance < minDistance && distance > 0) {
-            const force = (minDistance - distance) / minDistance;
-            repulsiveForceX += (dx / distance) * force * 0.03; // Very weak horizontal repulsion (per frame)
-            repulsiveForceY += (dy / distance) * force * 0.03; // Very weak vertical repulsion (per frame)
+            // Linear repulsive force - prevents orbiting
+            const repulsiveStrength = (minDistance - distance) / minDistance;
+            const repulsiveAngle = Math.atan2(dy, dx);
+            
+            // Apply weaker, more linear repulsive force
+            const repulsiveX = Math.cos(repulsiveAngle) * repulsiveStrength * 0.02;
+            const repulsiveY = Math.sin(repulsiveAngle) * repulsiveStrength * 0.02;
+            
+            repulsiveForceX += repulsiveX;
+            repulsiveForceY += repulsiveY;
           }
         }
       });
@@ -178,15 +204,47 @@
       const gravityForceX = gravityDistance > 0 ? (gravityDx / gravityDistance) * gravityStrength : 0;
       const gravityForceY = gravityDistance > 0 ? (gravityDy / gravityDistance) * gravityStrength : 0;
       
+        // Remove swirl trajectory - no more circular motion
+      
       // Apply movement using velocity vectors with speed multiplier, repulsive forces, and gravity
       const oldX = d.x;
       const oldY = d.y;
       d.x += (d.vx * speedMultiplier) + repulsiveForceX + gravityForceX;
       d.y += (d.vy * speedMultiplier) + repulsiveForceY + gravityForceY;
       
+      // Boundary bouncing to keep balloons in right half (50% of width)
+      const rightBoundary = width * 0.5; // Left boundary of right half
+      const leftBoundary = 0;
+      const topBoundary = 0;
+      const bottomBoundary = height;
+      
+      // Bounce off left boundary (keep in right half)
+      if (d.x < rightBoundary) {
+        d.x = rightBoundary;
+        d.vx = Math.abs(d.vx) * 0.8; // Bounce right with 20% momentum loss
+      }
+      
+      // Bounce off right boundary
+      if (d.x > width) {
+        d.x = width;
+        d.vx = -Math.abs(d.vx) * 0.8; // Bounce left with 20% momentum loss
+      }
+      
+      // Bounce off top boundary
+      if (d.y < topBoundary) {
+        d.y = topBoundary;
+        d.vy = Math.abs(d.vy) * 0.8; // Bounce down with 20% momentum loss
+      }
+      
+      // Bounce off bottom boundary
+      if (d.y > bottomBoundary) {
+        d.y = bottomBoundary;
+        d.vy = -Math.abs(d.vy) * 0.8; // Bounce up with 20% momentum loss
+      }
+      
       // Debug logging for first few balloons
       if (i < 3 && elapsed < 1000) {
-        console.log(`Balloon ${i}: vx=${d.vx}, vy=${d.vy}, speedMult=${speedMultiplier}, moved from (${oldX.toFixed(1)}, ${oldY.toFixed(1)}) to (${d.x.toFixed(1)}, ${d.y.toFixed(1)})`);
+        console.log(`Balloon ${i}: vx=${d.vx.toFixed(3)}, vy=${d.vy.toFixed(3)}, speedMult=${speedMultiplier.toFixed(3)}, moved from (${oldX.toFixed(1)}, ${oldY.toFixed(1)}) to (${d.x.toFixed(1)}, ${d.y.toFixed(1)})`);
       }
       
       // Add subtle breathing animation on top of vector movement
@@ -248,52 +306,40 @@
       const g = mask.append('g');
       const groups = nodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
 
-      // Layered transparency per balloon: 3 concentric circles with increasing opacity and smaller radius
-      const delays = { constructStep: 150, constructDuration: 320 };
+      // Layered transparency per balloon: multiple concentric circles with landing page method
       groups.forEach((gr, idx) => {
         const d = nodes[idx];
-        const baseR = Math.max(1, d.baseSize * (0.3 + Math.pow(1, opts.curvedExponent) * 0.5));
-        const r1 = baseR * 1.0;   // outer
-        const r2 = baseR * 0.70;  // middle
-        const r3 = baseR * 0.45;  // inner
-
-        // Random materialization start time within 1.5 second window
         const materializationStart = Math.random() * 1500; // 0-1.5 seconds
-        // Random materialization duration between 0.65-1.95 seconds (30% slower)
-        const materializationDuration = Math.random() * 1300 + 650; // 0.65-1.95 seconds
-
-        // Circle 1: ~90% transparency (black 0.9)
-        gr.append('circle')
-          .attr('r', 0)
-          .attr('fill', 'black')
-          .attr('opacity', 0)
-          .transition()
-          .delay(materializationStart)
-          .duration(materializationDuration)
-          .attr('r', r1)
-          .attr('opacity', 0.90);
-
-        // Circle 2: ~95% transparency
-        gr.append('circle')
-          .attr('r', 0)
-          .attr('fill', 'black')
-          .attr('opacity', 0)
-          .transition()
-          .delay(materializationStart + 200)
-          .duration(materializationDuration)
-          .attr('r', r2)
-          .attr('opacity', 0.95);
-
-        // Circle 3: 100% transparency at core
-        gr.append('circle')
-          .attr('r', 0)
-          .attr('fill', 'black')
-          .attr('opacity', 0)
-          .transition()
-          .delay(materializationStart + 350)
-          .duration(materializationDuration)
-          .attr('r', r3)
-          .attr('opacity', 1.0);
+        
+        // Create multiple layers like landing page
+        console.log(`Creating ${d.layers} layers for transparent balloon ${idx}`);
+        for (let layer = 0; layer < d.layers; layer++) {
+          const norm = d.layers <= 1 ? 1 : layer / (d.layers - 1);
+          // Use landing page non-linear scaling method
+          const curvedGrowth = Math.pow(norm, 1.75); // Curved function with constant 1.75
+          const r = Math.max(1, d.baseSize * (0.3 + curvedGrowth * 0.5)); // Curved layer sizing
+          
+          // Landing page construction method: biggest and smallest appear first
+          const maxLayer = d.layers - 1;
+          const distanceFromEdge = Math.min(layer, maxLayer - layer);
+          const constructionDelay = materializationStart + (distanceFromEdge * 150); // Edge layers appear first
+          
+          // Swiss cheese effect: outer layers less transparent, inner layers more transparent
+          // This creates holes that reveal the background image
+          const transparency = 0.7 + (layer * 0.05); // 70% to 100% transparency (much more dramatic difference)
+          
+          console.log(`  Layer ${layer}: radius=${r.toFixed(1)}, transparency=${transparency.toFixed(2)}, delay=${constructionDelay}ms`);
+          
+          gr.append('circle')
+            .attr('r', 0)
+            .attr('fill', 'black')
+            .attr('opacity', 0)
+            .transition()
+            .delay(constructionDelay)
+            .duration(720) // Landing page duration
+            .attr('r', r)
+            .attr('opacity', transparency);
+        }
       });
 
       svg.append('rect')
@@ -349,17 +395,19 @@
     const nodes = [];
     for (let i = 0; i < clusterSize; i++) {
       const layers = Math.floor(Math.random() * (opts.layerRange[1] - opts.layerRange[0] + 1)) + opts.layerRange[0];
-      const baseSize = (i === 0 ? 1.2 : 1.0) * (Math.random() * 34.13 + 24.38); // 30% increase from previous size
+      const baseSize = (i === 0 ? 1.2 : 1.0) * (Math.random() * 18.43 + 13.16); // 70% reduction in max radius size
       const angle = Math.random() * Math.PI * 2;
       const radius = (i === 0 ? 0 : Math.random() * 120 + 30);
       const x = cx + Math.cos(angle) * radius;
       const y = cy + Math.sin(angle) * radius * 0.6;
       
       // Add velocity and vector properties for type1 cluster balloons
-      const velocity = Math.random() * 0.5 + 0.2; // Moderate velocity for cluster balloons (0.2-0.7, more movement)
+      const velocity = Math.random() * 1.0 + 0.4; // Increased velocity for cluster balloons (0.4-1.4)
       const moveAngle = Math.random() * Math.PI * 2; // Random movement direction
       const vx = Math.cos(moveAngle) * velocity;
       const vy = Math.sin(moveAngle) * velocity;
+      
+      // Remove swirl trajectory properties for cluster balloons
       
       nodes.push({
         id: i,
@@ -372,13 +420,16 @@
         animationOffset: Math.random() * Math.PI * 2,
         verticalSpeed: Math.random() * 0.015 + 0.008,
         verticalOffset: Math.random() * Math.PI * 2,
-        verticalAmplitude: Math.random() * 18 + 10,
+        verticalAmplitude: Math.random() * 21.6 + 12, // 20% increase in vertical movement
         horizontalSpeed: baseSpeed * (Math.random() - 0.5) * 0.1,
         // New velocity and vector properties
         velocity: velocity,
         vx: vx, // X velocity component
         vy: vy, // Y velocity component
-        angle: moveAngle // Direction angle in radians
+        angle: moveAngle, // Direction angle in radians
+        collisionCooldown: 0, // Collision cooldown counter
+        originalX: x, // Store original position
+        originalY: y
       });
     }
 
@@ -407,7 +458,7 @@
       svgId: 'inner-balloons-svg',
       mode: 'type2',
       nodeCount: 8, // Max 8 balloons
-      layerRange: [4, 10],
+      layerRange: [8, 20], // 2x increase in max internal circle layers
       curvedExponent: 1.75,
       introDurationMs: 6000, // 50% longer movement time
       constructWindowPct: [0.14, 0.86],
