@@ -55,21 +55,44 @@
   }
 
   function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed) {
-    // Random number of balloons between 100-150 (10x increase)
-    const actualCount = Math.floor(Math.random() * 51) + 100; // 100-150 balloons
+    // Random number of balloons between 20-30 (90% reduction from 200-300)
+    const actualCount = Math.floor(Math.random() * 11) + 20; // 20-30 balloons
     const nodes = [];
     for (let i = 0; i < actualCount; i++) {
       const layers = Math.floor(Math.random() * (rangeLayers[1] - rangeLayers[0] + 1)) + rangeLayers[0];
-      const baseSize = Math.random() * 23.49 + 11.75; // 70% reduction in max radius size
+      const baseSize = Math.random() * 93.96 + 47.0; // 2x max size (doubled from previous)
       const x = (Math.random() * (constructWindowPct[1] - constructWindowPct[0]) + constructWindowPct[0]) * width;
       
-      // Add velocity and vector properties for different movement directions
-      const velocity = Math.random() * 2.5 + 1.5; // Increased velocity on materialization (1.5-4.0)
-      const angle = Math.random() * Math.PI * 2; // Random direction (0-2π radians)
-      const vx = Math.cos(angle) * velocity; // X component of velocity
-      const vy = Math.sin(angle) * velocity; // Y component of velocity
+      // Unique velocity and initial trajectory for each balloon
+      const uniqueVelocity = Math.random() * 3.0 + 0.5; // Wide range: 0.5-3.5
+      const uniqueAngle = Math.random() * Math.PI * 2; // Random direction (0-2π radians)
+      
+      // Calculate initial orbital velocity based on distance from the large gravitational body below
+      const centerBodyX = width * 0.5; // Center horizontally
+      const centerBodyY = height * 1.2; // Below the visible area (20% below bottom)
+      
+      // Calculate distance to the center gravitational body
+      const dx = x - centerBodyX;
+      const dy = yCenter - centerBodyY;
+      const orbitalDistance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Mix orbital motion with unique trajectory
+      const tangentialAngle = Math.atan2(-dx, dy); // Perpendicular to radius vector
+      const orbitalVelocity = uniqueVelocity * Math.sqrt(1 / Math.max(orbitalDistance, 10)); // Orbital velocity decreases with distance
+      
+      // Combine orbital motion with unique random trajectory
+      const orbitalVx = Math.cos(tangentialAngle) * orbitalVelocity;
+      const orbitalVy = Math.sin(tangentialAngle) * orbitalVelocity;
+      const randomVx = Math.cos(uniqueAngle) * uniqueVelocity * 0.3; // 30% random component
+      const randomVy = Math.sin(uniqueAngle) * uniqueVelocity * 0.3; // 30% random component
+      
+      const vx = orbitalVx + randomVx; // Combined velocity
+      const vy = orbitalVy + randomVy; // Combined velocity
       
       // Remove swirl trajectory properties - no more circular motion
+      
+      // Calculate gravity factor proportional to radius (larger balloons have more gravity)
+      const gravityFactor = baseSize / 50; // Normalize to reasonable gravity values
       
       nodes.push({
         id: i,
@@ -85,11 +108,13 @@
         horizontalSpeed: baseSpeed + (Math.random() - 0.5) * baseSpeed * 0.6,
         isConstructed: false,
         // New velocity and vector properties
-        velocity: velocity,
-        vx: vx, // X velocity component
-        vy: vy, // Y velocity component
-        angle: angle, // Direction angle in radians
+        velocity: uniqueVelocity, // Use unique velocity
+        vx: vx, // X velocity component (combined orbital + random)
+        vy: vy, // Y velocity component (combined orbital + random)
+        angle: uniqueAngle, // Use unique angle
+        orbitalAngle: tangentialAngle, // Store orbital angle separately
         collisionCooldown: 0, // Collision cooldown counter
+        gravityFactor: gravityFactor, // Gravity factor proportional to radius
         originalX: x, // Store original position
         originalY: yCenter + (Math.random() - 0.5) * clamp(height * 0.1, 20, 60) + (height * 0.2) // Reduced variance in materialization point
       });
@@ -106,7 +131,7 @@
       // Use landing page non-linear scaling method
       const curvedGrowth = Math.pow(norm, 1.75); // Curved function with constant 1.75 (from landing page)
       const r = Math.max(1, d.baseSize * (0.3 + curvedGrowth * 0.5)); // Curved layer sizing (from landing page)
-      const layerOpacity = Math.max(0.1, 0.4 - (layer * 0.05)); // Outer layers more transparent, minimum 0.1 (from landing page)
+      const layerOpacity = opacityFn ? opacityFn(layer, d.layers) : Math.max(0.2, 0.6 - (layer * 0.1)); // Use provided opacity function or default
       
       // Landing page construction method: biggest and smallest appear first, then work inward/outward
       const maxLayer = d.layers - 1;
@@ -192,25 +217,32 @@
         }
       });
       
-      // Calculate weak gravity center (midpoint of column 2 of section 2)
-      const gravityCenterX = width * 0.75; // Approximate center of right column
-      const gravityCenterY = height * 0.5; // Vertical center
-      const gravityStrength = 0.01; // Weak gravity (per frame)
+      // Orbital mechanics: Single large gravitational body below center
+      const centerBodyX = width * 0.5; // Center horizontally
+      const centerBodyY = height * 1.2; // Below the visible area (20% below bottom)
+      const gravityStrength = 1.0; // Very high gravity for strong attraction
       
-      // Calculate gravity force towards center
-      const gravityDx = gravityCenterX - d.x;
-      const gravityDy = gravityCenterY - d.y;
-      const gravityDistance = Math.sqrt(gravityDx * gravityDx + gravityDy * gravityDy);
-      const gravityForceX = gravityDistance > 0 ? (gravityDx / gravityDistance) * gravityStrength : 0;
-      const gravityForceY = gravityDistance > 0 ? (gravityDy / gravityDistance) * gravityStrength : 0;
+      // Calculate force from the large gravitational body below
+      const centerDx = centerBodyX - d.x;
+      const centerDy = centerBodyY - d.y;
+      const centerDistance = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
+      
+      let totalGravityForceX = 0;
+      let totalGravityForceY = 0;
+      
+      if (centerDistance > 0) {
+        const centerForce = (gravityStrength * d.gravityFactor) / (centerDistance * centerDistance); // Inverse square law with balloon gravity factor
+        totalGravityForceX = (centerDx / centerDistance) * centerForce;
+        totalGravityForceY = (centerDy / centerDistance) * centerForce;
+      }
       
         // Remove swirl trajectory - no more circular motion
       
-      // Apply movement using velocity vectors with speed multiplier, repulsive forces, and gravity
+      // Apply movement using velocity vectors with speed multiplier, repulsive forces, and orbital gravity
       const oldX = d.x;
       const oldY = d.y;
-      d.x += (d.vx * speedMultiplier) + repulsiveForceX + gravityForceX;
-      d.y += (d.vy * speedMultiplier) + repulsiveForceY + gravityForceY;
+      d.x += (d.vx * speedMultiplier) + repulsiveForceX + totalGravityForceX;
+      d.y += (d.vy * speedMultiplier) + repulsiveForceY + totalGravityForceY;
       
       // Boundary bouncing to keep balloons in right half (50% of width)
       const rightBoundary = width * 0.5; // Left boundary of right half
@@ -299,20 +331,19 @@
 
     if (opts.mode === 'transparent') {
       svg.selectAll('*').remove();
-      const defs = svg.append('defs');
-      const mask = defs.append('mask').attr('id', 'revealMask').attr('maskUnits', 'userSpaceOnUse');
-      mask.append('rect').attr('x', 0).attr('y', 0).attr('width', dims.width).attr('height', dims.height).attr('fill', 'white');
-
-      const g = mask.append('g');
+      
+      // Create balloons directly on SVG (not in mask) for visible concentric circles
+      const g = svg.append('g');
       const groups = nodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
 
-      // Layered transparency per balloon: multiple concentric circles with landing page method
+      // Layered transparency per balloon: multiple concentric circles with increasing transparency
+      console.log(`Creating ${groups.length} balloon groups for transparent mode`);
       groups.forEach((gr, idx) => {
         const d = nodes[idx];
         const materializationStart = Math.random() * 1500; // 0-1.5 seconds
         
         // Create multiple layers like landing page
-        console.log(`Creating ${d.layers} layers for transparent balloon ${idx}`);
+        console.log(`Creating ${d.layers} layers for transparent balloon ${idx} at position (${d.x.toFixed(1)}, ${d.y.toFixed(1)}) with baseSize ${d.baseSize.toFixed(1)}`);
         for (let layer = 0; layer < d.layers; layer++) {
           const norm = d.layers <= 1 ? 1 : layer / (d.layers - 1);
           // Use landing page non-linear scaling method
@@ -324,16 +355,18 @@
           const distanceFromEdge = Math.min(layer, maxLayer - layer);
           const constructionDelay = materializationStart + (distanceFromEdge * 150); // Edge layers appear first
           
-          // Swiss cheese effect: outer layers less transparent, inner layers more transparent
-          // This creates holes that reveal the background image
-          const transparency = 0.7 + (layer * 0.05); // 70% to 100% transparency (much more dramatic difference)
+          // Increasing transparency: outer layers more opaque, inner layers more transparent
+          // Union of circles becomes increasingly transparent up to total transparency at 3+ layers
+          const transparency = Math.max(0.1, 0.8 - (layer * 0.25)); // 80% to 10% opacity (decreasing)
           
           console.log(`  Layer ${layer}: radius=${r.toFixed(1)}, transparency=${transparency.toFixed(2)}, delay=${constructionDelay}ms`);
           
           gr.append('circle')
             .attr('r', 0)
-            .attr('fill', 'black')
+            .attr('fill', 'white') // White fill for transparent effect
             .attr('opacity', 0)
+            .attr('stroke', 'lightgrey') // Light grey stroke for visibility
+            .attr('stroke-width', 1)
             .transition()
             .delay(constructionDelay)
             .duration(720) // Landing page duration
@@ -341,12 +374,6 @@
             .attr('opacity', transparency);
         }
       });
-
-      svg.append('rect')
-        .attr('x', 0).attr('y', 0)
-        .attr('width', dims.width).attr('height', dims.height)
-        .attr('fill', 'white')
-        .attr('mask', 'url(#revealMask)');
 
       const state = {
         groups, nodes,
@@ -366,7 +393,7 @@
     const g = svg.append('g');
     const groups = nodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
 
-    const opacityFn = (layer, total) => clamp(0.15 + (0.4 - 0.05 * layer), 0.12, 0.4);
+    const opacityFn = (layer, total) => clamp(0.3 + (0.6 - 0.1 * layer), 0.2, 0.8); // More visible opacity range
     const delays = { constructStep: 150, constructDuration: 720 };
     groups.forEach((gr, idx) => appendLayers(gr, nodes[idx], opts.curvedExponent, opacityFn, delays));
 
