@@ -437,7 +437,8 @@
           
           // Inverted transparency: outer layers more opaque, inner layers more transparent
           // More overlapping bubbles = more background visible
-          const transparency = Math.max(0.0, bubbleOpacity - (layer * (bubbleOpacity / transparencySteps))); // Progressive transparency
+          // Flattened curve: each layer contributes max 5% increase in transparency
+          const transparency = Math.max(0.0, bubbleOpacity - (layer * 0.05)); // 5% per layer
           
           console.log(`  Layer ${layer}: radius=${r.toFixed(1)}, transparency=${transparency.toFixed(2)}, delay=${constructionDelay}ms`);
           
