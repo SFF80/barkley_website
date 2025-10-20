@@ -79,6 +79,20 @@
           svgId: 'inner-balloons-svg',
           introDurationMs: 3000
         });
+      } else if (which === 'type3') {
+        // Type 3: Inverted transparency with solid background and bubble "holes"
+        initInnerBalloons({
+          mode: 'type3',
+          containerSelector: '.inner-balloons',
+          svgId: 'inner-balloons-svg',
+          backgroundColor: '#ffffff',        // White background
+          bubbleOpacity: 0.8,               // Starting opacity for single bubbles
+          transparencySteps: 5,             // Number of steps to total transparency
+          nodeCount: 8,
+          constructWindowPct: [0.5, 0.95],
+          keepDrift: false,
+          introDurationMs: 6000
+        });
       } else {
         // Section 2 (header) transparent: only 5 holes in right half, 1.5s intro
         initInnerBalloons({
@@ -96,10 +110,11 @@
 
     document.addEventListener('DOMContentLoaded', function () {
       loadMode('type2');
-      window.addEventListener('keydown', function (e) {
-        if (e.key === '1') loadMode('type1');
-        else if (e.key === '2') loadMode('type2');
-      });
+        window.addEventListener('keydown', function (e) {
+          if (e.key === '1') loadMode('type1');
+          else if (e.key === '2') loadMode('type2');
+          else if (e.key === '3') loadMode('type3');
+        });
     });
   </script>
 </body>

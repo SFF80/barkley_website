@@ -388,6 +388,87 @@
       return;
     }
 
+    if (opts.mode === 'type3') {
+      svg.selectAll('*').remove();
+      
+      // Type 3: Inverted transparency with solid background and bubble "holes"
+      const backgroundColor = opts.backgroundColor || '#ffffff';
+      const bubbleOpacity = opts.bubbleOpacity || 0.8;
+      const transparencySteps = opts.transparencySteps || 5;
+      
+      // Create solid background rectangle
+      svg.append('rect')
+        .attr('x', 0).attr('y', 0)
+        .attr('width', dims.width).attr('height', dims.height)
+        .attr('fill', backgroundColor)
+        .attr('opacity', 1.0);
+      
+      // Create SVG mask for bubble "holes"
+      const defs = svg.append('defs');
+      const mask = defs.append('mask').attr('id', 'type3Mask').attr('maskUnits', 'userSpaceOnUse');
+      
+      // White background in mask (shows the solid background)
+      mask.append('rect')
+        .attr('x', 0).attr('y', 0)
+        .attr('width', dims.width).attr('height', dims.height)
+        .attr('fill', 'white');
+      
+      // Black bubbles in mask (create "holes" in the background)
+      const g = mask.append('g');
+      const groups = nodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
+
+      console.log(`Creating ${groups.length} balloon groups for Type 3 inverted transparency mode`);
+      groups.forEach((gr, idx) => {
+        const d = nodes[idx];
+        const materializationStart = Math.random() * 1500; // 0-1.5 seconds
+        
+        // Create multiple layers for each balloon
+        console.log(`Creating ${d.layers} layers for Type 3 balloon ${idx} at position (${d.x.toFixed(1)}, ${d.y.toFixed(1)}) with baseSize ${d.baseSize.toFixed(1)}`);
+        for (let layer = 0; layer < d.layers; layer++) {
+          const norm = d.layers <= 1 ? 1 : layer / (d.layers - 1);
+          // Use landing page non-linear scaling method
+          const curvedGrowth = Math.pow(norm, 1.75); // Curved function with constant 1.75
+          const r = Math.max(1, d.baseSize * (0.3 + curvedGrowth * 0.5)); // Curved layer sizing
+          
+          // Landing page construction method: biggest and smallest appear first
+          const maxLayer = d.layers - 1;
+          const distanceFromEdge = Math.min(layer, maxLayer - layer);
+          const constructionDelay = materializationStart + (distanceFromEdge * 150); // Edge layers appear first
+          
+          // Inverted transparency: outer layers more opaque, inner layers more transparent
+          // More overlapping bubbles = more background visible
+          const transparency = Math.max(0.0, bubbleOpacity - (layer * (bubbleOpacity / transparencySteps))); // Progressive transparency
+          
+          console.log(`  Layer ${layer}: radius=${r.toFixed(1)}, transparency=${transparency.toFixed(2)}, delay=${constructionDelay}ms`);
+          
+          gr.append('circle')
+            .attr('r', 0)
+            .attr('fill', 'black') // Black fill in mask creates "holes"
+            .attr('opacity', 0)
+            .transition()
+            .delay(constructionDelay)
+            .duration(720) // Landing page duration
+            .attr('r', r)
+            .attr('opacity', transparency);
+        }
+      });
+
+      // Apply mask to background rectangle
+      svg.select('rect').attr('mask', 'url(#type3Mask)');
+
+      const state = {
+        groups, nodes,
+        width: dims.width, height: dims.height,
+        introDurationMs: opts.introDurationMs,
+        keepDrift: !!opts.keepDrift,
+        frozen: false,
+        microDrift: false,
+        t0: performance.now()
+      };
+      requestAnimationFrame(() => animateRAF(state));
+      return;
+    }
+
     // Colored type2
     nodes.forEach((n, i) => { n.color = colorPool[i % colorPool.length]; });
     const g = svg.append('g');
