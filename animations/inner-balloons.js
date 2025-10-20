@@ -410,73 +410,8 @@
   }
 
   function type1Cluster(svg, dims, opts) {
-    const clusterSize = Math.max(3, opts.clusterSize || 7);
-    const yAnchor = centerOf('.section2-right, .inner-hero-content h1, .inner-hero-content', dims.rect).cy;
-    const cx = dims.width * 0.72;
-    const cy = yAnchor;
-
-    const primary = opts.primaryHue === 'auto' ? pickEnhancedColor() : opts.primaryHue;
-    const greys = ['#EFEFEF', '#E3E3E3', '#D8D8D8', '#CECECE'];
-
-    const baseSpeed = 0.08;
-    const nodes = [];
-    for (let i = 0; i < clusterSize; i++) {
-      const layers = Math.floor(Math.random() * (opts.layerRange[1] - opts.layerRange[0] + 1)) + opts.layerRange[0];
-      const baseSize = (i === 0 ? 1.2 : 1.0) * (Math.random() * 18.43 + 13.16); // 70% reduction in max radius size
-      const angle = Math.random() * Math.PI * 2;
-      const radius = (i === 0 ? 0 : Math.random() * 120 + 30);
-      const x = cx + Math.cos(angle) * radius;
-      const y = cy + Math.sin(angle) * radius * 0.6;
-      
-      // Add velocity and vector properties for type1 cluster balloons
-      const velocity = Math.random() * 1.0 + 0.4; // Increased velocity for cluster balloons (0.4-1.4)
-      const moveAngle = Math.random() * Math.PI * 2; // Random movement direction
-      const vx = Math.cos(moveAngle) * velocity;
-      const vy = Math.sin(moveAngle) * velocity;
-      
-      // Remove swirl trajectory properties for cluster balloons
-      
-      nodes.push({
-        id: i,
-        layers,
-        baseSize,
-        x,
-        y,
-        color: i === 0 ? primary : greys[i % greys.length],
-        animationSpeed: Math.random() * 0.06 + 0.03,
-        animationOffset: Math.random() * Math.PI * 2,
-        verticalSpeed: Math.random() * 0.015 + 0.008,
-        verticalOffset: Math.random() * Math.PI * 2,
-        verticalAmplitude: Math.random() * 21.6 + 12, // 20% increase in vertical movement
-        horizontalSpeed: baseSpeed * (Math.random() - 0.5) * 0.1,
-        // New velocity and vector properties
-        velocity: velocity,
-        vx: vx, // X velocity component
-        vy: vy, // Y velocity component
-        angle: moveAngle, // Direction angle in radians
-        collisionCooldown: 0, // Collision cooldown counter
-        originalX: x, // Store original position
-        originalY: y
-      });
-    }
-
-    const g = svg.append('g');
-    const groups = nodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
-
-    const opacityFn = (layer) => clamp(0.15 + (0.4 - 0.05 * layer), 0.12, 0.4);
-    const delays = { constructStep: 150, constructDuration: 600 };
-    groups.forEach((gr, idx) => appendLayers(gr, nodes[idx], opts.curvedExponent, opacityFn, delays));
-
-    const state = {
-      groups, nodes,
-      width: dims.width, height: dims.height,
-      introDurationMs: Math.max(2000, Math.min(opts.introDurationMs || 3000, 5000)),
-      keepDrift: false,
-      frozen: false,
-      microDrift: false,
-      t0: performance.now()
-    };
-    requestAnimationFrame(() => animateRAF(state));
+    // Use identical Type 2 behavior for Type 1
+    return type2Swirl(svg, dims, opts);
   }
 
   function initInnerBalloons(options) {
