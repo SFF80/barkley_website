@@ -55,10 +55,12 @@
   }
 
   function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed) {
+    // Random number of balloons between 10-15
+    const actualCount = Math.floor(Math.random() * 6) + 10; // 10-15 balloons
     const nodes = [];
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < actualCount; i++) {
       const layers = Math.floor(Math.random() * (rangeLayers[1] - rangeLayers[0] + 1)) + rangeLayers[0];
-      const baseSize = Math.random() * 33.46 + 16.73; // 75% reduction in max size
+      const baseSize = Math.random() * 43.5 + 21.75; // 30% increase from previous size
       const x = (Math.random() * (constructWindowPct[1] - constructWindowPct[0]) + constructWindowPct[0]) * width;
       
       // Add velocity and vector properties for different movement directions
@@ -93,8 +95,8 @@
   function appendLayers(group, d, curvedExponent, opacityFn, delays) {
     // Random materialization start time within 1.5 second window
     const materializationStart = Math.random() * 1500; // 0-1.5 seconds
-    // Random materialization duration between 0.5-1.5 seconds
-    const materializationDuration = Math.random() * 1000 + 500; // 0.5-1.5 seconds
+    // Random materialization duration between 0.65-1.95 seconds (30% slower)
+    const materializationDuration = Math.random() * 1300 + 650; // 0.65-1.95 seconds
     
     for (let layer = 0; layer < d.layers; layer++) {
       const norm = d.layers <= 1 ? 1 : layer / (d.layers - 1);
@@ -257,8 +259,8 @@
 
         // Random materialization start time within 1.5 second window
         const materializationStart = Math.random() * 1500; // 0-1.5 seconds
-        // Random materialization duration between 0.5-1.5 seconds
-        const materializationDuration = Math.random() * 1000 + 500; // 0.5-1.5 seconds
+        // Random materialization duration between 0.65-1.95 seconds (30% slower)
+        const materializationDuration = Math.random() * 1300 + 650; // 0.65-1.95 seconds
 
         // Circle 1: ~90% transparency (black 0.9)
         gr.append('circle')
@@ -347,7 +349,7 @@
     const nodes = [];
     for (let i = 0; i < clusterSize; i++) {
       const layers = Math.floor(Math.random() * (opts.layerRange[1] - opts.layerRange[0] + 1)) + opts.layerRange[0];
-      const baseSize = (i === 0 ? 1.2 : 1.0) * (Math.random() * 26.25 + 18.75); // 75% reduction in max size
+      const baseSize = (i === 0 ? 1.2 : 1.0) * (Math.random() * 34.13 + 24.38); // 30% increase from previous size
       const angle = Math.random() * Math.PI * 2;
       const radius = (i === 0 ? 0 : Math.random() * 120 + 30);
       const x = cx + Math.cos(angle) * radius;
