@@ -567,4 +567,87 @@ body {
     }
 }
 
+/* Inner Page Template Styles */
+.inner-hero {
+  position: relative;
+  min-height: min(60vh, 680px);
+  padding: clamp(2rem, 5vw, 4rem) clamp(0rem, 3.6vw, 2.7rem);
+  background-size: cover;
+  background-position: center;
+}
+
+.inner-balloons {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+#inner-balloons-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.inner-hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #333;
+}
+
+.inner-hero-content h1 {
+  font-family: Arial, sans-serif;
+  font-weight: 300;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  margin: 0 0 1rem 0;
+}
+
+.inner-hero-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.blue-section {
+  background-color: #0E5AA7;
+  color: #fff;
+  padding: 3rem clamp(0rem, 3.6vw, 2.7rem);
+}
+
+.blue-section .content-row {
+  max-width: 1210px;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.blue-section .content-col h2 {
+  font-weight: 400;
+  margin: 0 0 0.75rem 0;
+}
+
+@media (max-width: 768px) {
+  .blue-section .content-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Section 2 bubbles overlay */
+.section2-bubbles {
+  position: relative;
+}
+.section2-bubbles .section2-bubbles-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* behind text columns if text uses higher z */
+  pointer-events: none;
+}
+.section2-bubbles .content-row,
+.section2-bubbles .content-col { position: relative; z-index: 2; }
+
+#section2-bubbles-svg { width: 100%; height: 100%; display: block; }
+
 
