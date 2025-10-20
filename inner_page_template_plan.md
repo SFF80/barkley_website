@@ -78,18 +78,30 @@ Type 3 creates bubbles of translucency→transparency in a solid background colo
 - **Solid background layer**: Completely opaque base color (e.g., white, blue, brand color)
 - **Bubble "holes"**: Bubbles act as "erasers" that remove opacity from the background
 - **Inverted transparency**: More overlapping bubbles = more background color visible
-- **Total transparency**: Achieved at 5th internal bubble (0% opacity)
+- **Total transparency**: Achieved at 16th internal bubble (0% opacity)
 
 **Implementation Method:**
 1. **Background rectangle**: Solid color fill (100% opacity) covering entire area
 2. **Bubble mask system**: Bubbles subtract opacity from the background using SVG masks or blend modes
-3. **Inverted opacity calculation**: 
-   - Single bubble: 80% opacity (20% background visible)
-   - 2 overlapping bubbles: 60% opacity (40% background visible)
-   - 3 overlapping bubbles: 40% opacity (60% background visible)
-   - 4 overlapping bubbles: 20% opacity (80% background visible)
-   - 5+ overlapping bubbles: 0% opacity (100% background visible)
-4. **Progressive transparency**: Each additional layer reduces bubble opacity, revealing more background
+3. **Flattened transparency curve**: Each layer contributes only 5% increase in transparency
+   - Layer 0: 80% opacity (20% background visible)
+   - Layer 1: 75% opacity (25% background visible)
+   - Layer 2: 70% opacity (30% background visible)
+   - Layer 3: 65% opacity (35% background visible)
+   - Layer 4: 60% opacity (40% background visible)
+   - Layer 5: 55% opacity (45% background visible)
+   - Layer 6: 50% opacity (50% background visible)
+   - Layer 7: 45% opacity (55% background visible)
+   - Layer 8: 40% opacity (60% background visible)
+   - Layer 9: 35% opacity (65% background visible)
+   - Layer 10: 30% opacity (70% background visible)
+   - Layer 11: 25% opacity (75% background visible)
+   - Layer 12: 20% opacity (80% background visible)
+   - Layer 13: 15% opacity (85% background visible)
+   - Layer 14: 10% opacity (90% background visible)
+   - Layer 15: 5% opacity (95% background visible)
+   - Layer 16+: 0% opacity (100% background visible - total transparency)
+4. **Gradual transparency**: Each additional layer reduces bubble opacity by only 5%, creating smooth transitions
 
 **Visual Effect:**
 - **Base layer**: Solid colored "wall"
@@ -109,7 +121,7 @@ Type 3 creates bubbles of translucency→transparency in a solid background colo
   mode: 'type3',
   backgroundColor: '#ffffff',        // Solid background color
   bubbleOpacity: 0.8,               // Starting opacity for single bubbles
-  transparencySteps: 5,             // Number of steps to total transparency
+  transparencySteps: 16,            // Number of steps to total transparency (flattened curve)
   blendMode: 'multiply'             // SVG blend mode for opacity calculation
 }
 ```
@@ -135,7 +147,7 @@ Public API (config object in `initInnerBalloons(options)`):
   // Type 3 specific options:
   backgroundColor: '#ffffff',     // Solid background color for Type 3
   bubbleOpacity: 0.8,            // Starting opacity for single bubbles
-  transparencySteps: 5,          // Number of steps to total transparency
+  transparencySteps: 16,         // Number of steps to total transparency (flattened curve)
   blendMode: 'multiply'          // SVG blend mode for opacity calculation
 }
 ```
