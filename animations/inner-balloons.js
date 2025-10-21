@@ -984,8 +984,8 @@
       // Type 2 specific: white transparent balloons
       balloonColor: 'white',
       breathingEnabled: false,
-      sizeMultiplier: 0.8, // 20% smaller max size
-      minSizeMultiplier: 0.48, // 40% smaller min size
+      sizeMultiplier: 1.04, // 30% larger max size (0.8 * 1.3 = 1.04)
+      minSizeMultiplier: 0.336, // 30% smaller min size (0.48 * 0.7 = 0.336)
       // Type 3 lifecycle characteristics added to Type 2:
       continuousCycling: true,
       timeToLive: [45, 90]
