@@ -54,7 +54,7 @@
     return { cx: relativeToRect.width * 0.5, cy };
   }
 
-  function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed) {
+  function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed, mode = 'default') {
     // Use the provided count parameter instead of hardcoded range
     const actualCount = count;
     const nodes = [];
@@ -107,8 +107,15 @@
       const x = findBestSpawnPosition(nodes, width, topBoundary);
       
       // All balloons spawn at top boundary and drift down
-      const minFallSpeed = 0.5 * 1.3 * 1.3; // Increased by 30% (0.5 * 1.3 * 1.3 = 0.845)
-      const maxFallSpeed = 2.0 * 1.3 * 1.3; // Increased by 30% (2.0 * 1.3 * 1.3 = 3.38)
+      let minFallSpeed = 0.5 * 1.3 * 1.3; // Increased by 30% (0.5 * 1.3 * 1.3 = 0.845)
+      let maxFallSpeed = 2.0 * 1.3 * 1.3; // Increased by 30% (2.0 * 1.3 * 1.3 = 3.38)
+      
+      // Type 3 specific speed increase (50% faster minimum speed)
+      if (mode === 'type3') {
+        minFallSpeed *= 1.5; // 50% increase for Type 3 minimum speed
+        maxFallSpeed *= 1.5; // 50% increase for Type 3 maximum speed
+      }
+      
       const fallSpeed = Math.random() * (maxFallSpeed - minFallSpeed) + minFallSpeed;
       
       // Add horizontal force at inception
@@ -204,14 +211,20 @@
     const slowDownEnd = zeroGravityEnd + slowDownDuration;
     
     let speedMultiplier = 1;
+    
+    // Type 3 specific speed increase (30% faster)
+    if (opts.mode === 'type3') {
+      speedMultiplier *= 1.3; // 30% increase for Type 3
+    }
+    
     if (elapsed > zeroGravityEnd) {
       if (elapsed <= slowDownEnd) {
         // Gradual slowdown over 2 seconds
         const slowDownProgress = (elapsed - zeroGravityEnd) / slowDownDuration;
-        speedMultiplier = 1 - (slowDownProgress * 0.9); // Slow down to 10% of original speed
+        speedMultiplier = speedMultiplier * (1 - (slowDownProgress * 0.9)); // Slow down to 10% of original speed
       } else {
         // After slowdown, maintain very slow movement
-        speedMultiplier = 0.1;
+        speedMultiplier = speedMultiplier * 0.1;
         // Don't freeze for Type 3 - we need the animation loop to continue for dematerialization
         if (!state.keepDrift && opts.mode !== 'type3') {
           state.frozen = true;
@@ -237,8 +250,8 @@
             const repulsiveAngle = Math.atan2(dy, dx);
             
             // Apply directional repulsive force (both X and Y components)
-            const repulsiveX = Math.cos(repulsiveAngle) * repulsiveStrength * 0.1;
-            const repulsiveY = Math.sin(repulsiveAngle) * repulsiveStrength * 0.1;
+            const repulsiveX = Math.cos(repulsiveAngle) * repulsiveStrength * 0.125; // Increased by 25% (0.1 * 1.25 = 0.125)
+            const repulsiveY = Math.sin(repulsiveAngle) * repulsiveStrength * 0.125; // Increased by 25% (0.1 * 1.25 = 0.125)
             
             repulsiveForceX += repulsiveX;
             repulsiveForceY += repulsiveY;
@@ -301,6 +314,14 @@
       if (d.y > bottomBoundary) {
         d.y = bottomBoundary;
         d.vy = -Math.abs(d.vy) * 0.8; // Bounce up with 20% momentum loss
+        
+        // Type 3 specific: Reduce velocity after first bottom bounce
+        if (opts.mode === 'type3' && !d.hasBouncedBottom) {
+          d.hasBouncedBottom = true;
+          d.vx *= 0.5; // Reduce horizontal velocity by 50%
+          d.vy *= 0.5; // Reduce vertical velocity by 50%
+          console.log(`Type 3 balloon ${i} first bottom bounce - velocity reduced by 50%`);
+        }
       }
       
       // Debug logging for first few balloons
@@ -414,7 +435,7 @@
 
     // Widen safe band to keep clear of left text column
     const windowPct = opts.constructWindowPct || [0.14, 0.86];
-    const nodes = makeNodes(opts.nodeCount, opts.layerRange, dims.width, dims.height, yAnchor, windowPct, 0.15);
+    const nodes = makeNodes(opts.nodeCount, opts.layerRange, dims.width, dims.height, yAnchor, windowPct, 0.15, opts.mode);
     
     // Add velocity properties to transparent balloons
     nodes.forEach((n, i) => { 
@@ -669,9 +690,12 @@
     const node = state.nodes[balloonIndex];
     const group = state.groups[balloonIndex];
     
-    console.log(`Starting dematerialization for balloon ${balloonIndex}`);
+    console.log(`Starting dematerialization for balloon ${balloonIndex} and creating replacement simultaneously`);
     node.isDematerializing = true;
     node.dematerializationStartTime = performance.now();
+    
+    // IMMEDIATELY create new balloon (simultaneous with dematerialization start)
+    createNewBalloon(state, balloonIndex);
     
     // Get all circles in this balloon group
     const circles = group.selectAll('circle');
@@ -684,24 +708,23 @@
     let completedLayers = 0;
     const totalLayers = circleNodes.length;
     
-    // Dematerialize each layer (reverse of materialization)
+    // Dematerialize each layer by fading opacity from center outwards
     circles.each(function(d, i) {
       const circle = d3.select(this);
       const layer = i; // Use index as layer since data binding isn't working
       
-      // Calculate dematerialization delay (reverse of construction)
+      // Calculate dematerialization delay (center outwards)
       const maxLayer = circleNodes.length - 1;
-      const distanceFromEdge = Math.min(layer, maxLayer - layer);
-      const dematerializationDelay = distanceFromEdge * 150; // Same as construction delay
+      const distanceFromCenter = Math.abs(layer - maxLayer / 2); // Distance from center
+      const dematerializationDelay = distanceFromCenter * 200; // Center starts first, edges last
       
-      console.log(`  Circle ${i}: layer=${layer}, distanceFromEdge=${distanceFromEdge}, delay=${dematerializationDelay}ms`);
+      console.log(`  Circle ${i}: layer=${layer}, distanceFromCenter=${distanceFromCenter.toFixed(1)}, delay=${dematerializationDelay}ms`);
       
-      // Dematerialize (mirror front page deconstruction timing)
+      // Dematerialize by fading opacity only (no size change)
       circle.transition()
         .delay(dematerializationDelay)
         .duration(21600) // 6x slower than materialization (3600 * 6)
-        .attr('r', 0)
-        .attr('opacity', 0)
+        .attr('opacity', 0) // Only fade opacity, keep radius unchanged
         .on('end', function() {
           completedLayers++;
           console.log(`Layer ${layer} dematerialized (${completedLayers}/${totalLayers})`);
@@ -714,13 +737,12 @@
   
   function completeDematerialization(state, balloonIndex) {
     const node = state.nodes[balloonIndex];
-    console.log(`Balloon ${balloonIndex} fully dematerialized, creating replacement`);
+    console.log(`Balloon ${balloonIndex} fully dematerialized (replacement already created)`);
     
     node.isDematerialized = true;
     node.isDematerializing = false;
     
-    // Create a new balloon to replace the dematerialized one
-    createNewBalloon(state, balloonIndex);
+    // No need to create new balloon - it was already created in startDematerialization
   }
   
   function createNewBalloon(state, balloonIndex) {
@@ -768,7 +790,7 @@
     
     try {
       // Create balloon with anti-clustering positioning
-      const newNodes = makeNodes(1, opts.layerRange, dims.width, dims.height, topBoundary, [0.5 + 100/dims.width, 1], 0.15);
+      const newNodes = makeNodes(1, opts.layerRange, dims.width, dims.height, topBoundary, [0.5 + 100/dims.width, 1], 0.15, opts.mode);
       const newNode = newNodes[0];
       
       // Override the X position with our anti-clustered position
