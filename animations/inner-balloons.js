@@ -55,39 +55,67 @@
   }
 
   function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed) {
-    // Random number of balloons between 20-30 (90% reduction from 200-300)
-    const actualCount = Math.floor(Math.random() * 11) + 20; // 20-30 balloons
+    // Use the provided count parameter instead of hardcoded range
+    const actualCount = count;
     const nodes = [];
+    
+    // Helper function to find best spawn position (furthest from existing balloons)
+    function findBestSpawnPosition(existingNodes, width, topBoundary) {
+      const leftBound = 0.5 + 100/width; // Right portion start (center + 100px)
+      const rightBound = 1.0; // Right edge
+      const minDistance = 150; // Minimum distance from existing balloons
+      
+      let bestX = 0;
+      let maxMinDistance = 0;
+      
+      // Try multiple random positions and pick the one with maximum minimum distance
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const candidateX = (Math.random() * (rightBound - leftBound) + leftBound) * width;
+        
+        // Calculate minimum distance to any existing balloon
+        let minDistToExisting = Infinity;
+        for (const existingNode of existingNodes) {
+          const dx = candidateX - existingNode.x;
+          const dy = topBoundary - existingNode.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          minDistToExisting = Math.min(minDistToExisting, distance);
+        }
+        
+        // If this is the best position so far, keep it
+        if (minDistToExisting > maxMinDistance) {
+          maxMinDistance = minDistToExisting;
+          bestX = candidateX;
+        }
+      }
+      
+      return bestX;
+    }
+    
     for (let i = 0; i < actualCount; i++) {
-      const layers = Math.floor(Math.random() * (rangeLayers[1] - rangeLayers[0] + 1)) + rangeLayers[0];
-      const baseSize = Math.random() * 93.96 + 47.0; // 2x max size (doubled from previous)
-      const x = (Math.random() * (constructWindowPct[1] - constructWindowPct[0]) + constructWindowPct[0]) * width;
+      const maxSize = 140.96 * 1.4; // Maximum balloon size increased by 40%
+      const minSize = maxSize * 0.8; // 80% of maximum size (20% variation)
+      const baseSize = Math.random() * (maxSize - minSize) + minSize; // Range from 80% to 100% of max
       
-      // Unique velocity and initial trajectory for each balloon
-      const uniqueVelocity = Math.random() * 3.0 + 0.5; // Wide range: 0.5-3.5
-      const uniqueAngle = Math.random() * Math.PI * 2; // Random direction (0-2π radians)
+      // Make number of layers proportional to balloon radius
+      const minLayers = 14; // Minimum layers for smallest balloons (3x baseline + 50%)
+      const maxLayers = 24; // Maximum layers for largest balloons (3x baseline)
+      const sizeRatio = (baseSize - minSize) / (maxSize - minSize); // 0 to 1
+      const layers = Math.floor(minLayers + (maxLayers - minLayers) * sizeRatio);
       
-      // Calculate initial orbital velocity based on distance from the large gravitational body below
-      const centerBodyX = width * 0.5; // Center horizontally
-      const centerBodyY = height * 1.2; // Below the visible area (20% below bottom)
+      // Use anti-clustering positioning
+      const topBoundary = 60; // Navigation bar height
+      const x = findBestSpawnPosition(nodes, width, topBoundary);
       
-      // Calculate distance to the center gravitational body
-      const dx = x - centerBodyX;
-      const dy = yCenter - centerBodyY;
-      const orbitalDistance = Math.sqrt(dx * dx + dy * dy);
+      // All balloons spawn at top boundary and drift down
+      const minFallSpeed = 0.5 * 1.3 * 1.3; // Increased by 30% (0.5 * 1.3 * 1.3 = 0.845)
+      const maxFallSpeed = 2.0 * 1.3 * 1.3; // Increased by 30% (2.0 * 1.3 * 1.3 = 3.38)
+      const fallSpeed = Math.random() * (maxFallSpeed - minFallSpeed) + minFallSpeed;
       
-      // Mix orbital motion with unique trajectory
-      const tangentialAngle = Math.atan2(-dx, dy); // Perpendicular to radius vector
-      const orbitalVelocity = uniqueVelocity * Math.sqrt(1 / Math.max(orbitalDistance, 10)); // Orbital velocity decreases with distance
+      // Add horizontal force at inception
+      const horizontalForce = (Math.random() - 0.5) * 1.0; // -0.5 to 0.5 horizontal drift
       
-      // Combine orbital motion with unique random trajectory
-      const orbitalVx = Math.cos(tangentialAngle) * orbitalVelocity;
-      const orbitalVy = Math.sin(tangentialAngle) * orbitalVelocity;
-      const randomVx = Math.cos(uniqueAngle) * uniqueVelocity * 0.3; // 30% random component
-      const randomVy = Math.sin(uniqueAngle) * uniqueVelocity * 0.3; // 30% random component
-      
-      const vx = orbitalVx + randomVx; // Combined velocity
-      const vy = orbitalVy + randomVy; // Combined velocity
+      const vx = horizontalForce; // Horizontal drift
+      const vy = fallSpeed; // Downward fall speed
       
       // Remove swirl trajectory properties - no more circular motion
       
@@ -99,7 +127,7 @@
         layers,
         baseSize,
         x,
-        y: yCenter + (Math.random() - 0.5) * clamp(height * 0.1, 20, 60) + (height * 0.2), // Match originalY calculation
+        y: topBoundary, // Spawn at top boundary
         animationSpeed: Math.random() * 0.08 + 0.04,
         animationOffset: Math.random() * Math.PI * 2,
         verticalSpeed: Math.random() * 0.024 + 0.012,
@@ -107,16 +135,16 @@
         verticalAmplitude: Math.random() * 43.2 + 37.44, // 20% increase in vertical movement
         horizontalSpeed: baseSpeed + (Math.random() - 0.5) * baseSpeed * 0.6,
         isConstructed: false,
-        // New velocity and vector properties
-        velocity: uniqueVelocity, // Use unique velocity
-        vx: vx, // X velocity component (combined orbital + random)
-        vy: vy, // Y velocity component (combined orbital + random)
-        angle: uniqueAngle, // Use unique angle
-        orbitalAngle: tangentialAngle, // Store orbital angle separately
+        // New velocity and vector properties for falling motion
+        velocity: fallSpeed, // Use fall speed
+        vx: vx, // X velocity component (horizontal drift)
+        vy: vy, // Y velocity component (downward fall)
+        angle: Math.PI / 2, // Downward direction
+        orbitalAngle: 0, // No orbital motion
         collisionCooldown: 0, // Collision cooldown counter
         gravityFactor: gravityFactor, // Gravity factor proportional to radius
         originalX: x, // Store original position
-        originalY: yCenter + (Math.random() - 0.5) * clamp(height * 0.1, 20, 60) + (height * 0.2) // Reduced variance in materialization point
+        originalY: topBoundary // Match the spawn position
       });
     }
     return nodes;
@@ -155,7 +183,7 @@
         })
         .transition()
         .delay(constructionDelay)
-        .duration(720) // Landing page duration
+        .duration(3600) // 5x slower than original (720 * 5)
         .attr('r', r)
         .attr('opacity', layerOpacity)
         .end?.()
@@ -163,8 +191,9 @@
     }
   }
 
-  function animateRAF(state) {
-    if (state.frozen) return;
+  function animateRAF(state, opts) {
+    // For Type 3, don't stop the animation loop even when "frozen" - we need it for dematerialization
+    if (state.frozen && opts.mode !== 'type3') return;
     const { groups, nodes, t0, microDrift, width, height } = state;
     const now = performance.now();
     const elapsed = now - t0;
@@ -183,8 +212,8 @@
       } else {
         // After slowdown, maintain very slow movement
         speedMultiplier = 0.1;
-        // Freeze after the slowdown period if keepDrift is false
-        if (!state.keepDrift) {
+        // Don't freeze for Type 3 - we need the animation loop to continue for dematerialization
+        if (!state.keepDrift && opts.mode !== 'type3') {
           state.frozen = true;
         }
       }
@@ -203,13 +232,13 @@
           const minDistance = (d.baseSize + other.baseSize) * 0.8; // Reduced minimum distance
           
           if (distance < minDistance && distance > 0) {
-            // Linear repulsive force - prevents orbiting
-            const repulsiveStrength = (minDistance - distance) / minDistance;
+            // Inverse square law repulsive force - stronger when closer
+            const repulsiveStrength = 1 / (distance * distance); // Inverse square law
             const repulsiveAngle = Math.atan2(dy, dx);
             
-            // Apply weaker, more linear repulsive force
-            const repulsiveX = Math.cos(repulsiveAngle) * repulsiveStrength * 0.02;
-            const repulsiveY = Math.sin(repulsiveAngle) * repulsiveStrength * 0.02;
+            // Apply directional repulsive force (both X and Y components)
+            const repulsiveX = Math.cos(repulsiveAngle) * repulsiveStrength * 0.1;
+            const repulsiveY = Math.sin(repulsiveAngle) * repulsiveStrength * 0.1;
             
             repulsiveForceX += repulsiveX;
             repulsiveForceY += repulsiveY;
@@ -244,10 +273,10 @@
       d.x += (d.vx * speedMultiplier) + repulsiveForceX + totalGravityForceX;
       d.y += (d.vy * speedMultiplier) + repulsiveForceY + totalGravityForceY;
       
-      // Boundary bouncing to keep balloons in right half (50% of width)
-      const rightBoundary = width * 0.5; // Left boundary of right half
-      const leftBoundary = 0;
-      const topBoundary = 0;
+      // Boundary bouncing to keep balloons in right portion (center + 100px)
+      const rightBoundary = width * 0.5 + 100; // Left boundary: center + 100px
+      const leftBoundary = -100; // Reduced by 100px
+      const topBoundary = 60; // Navigation bar height (approximately 60px)
       const bottomBoundary = height;
       
       // Bounce off left boundary (keep in right half)
@@ -287,7 +316,82 @@
       
       // Update position - works for both regular balloons and mask elements
       groups[i].attr('transform', `translate(${d.x}, ${d.y + breathingOffset})`);
+      
+      // Add breathing effect to inner circles for Types 2, 3, and 4
+      if (opts.mode === 'type2' || opts.mode === 'type3' || opts.mode === 'type4' || opts.mode === 'colored' || opts.mode === 'transparent') {
+        groups[i].selectAll('circle').each(function(circleData) {
+          if (circleData && circleData.layerSize) {
+            const circle = d3.select(this);
+            const baseRadius = circleData.layerSize;
+            const layer = circleData.layer || 0;
+            
+            if (opts.mode === 'type4') {
+              // Type 4: Simplified breathing - all circles in same balloon breathe at same rate
+              // Breathing rate is randomly assigned per balloon (2-3 seconds)
+              const breathingRate = d.breathingRate || 1; // Use balloon's assigned breathing rate
+              const breathingAmplitude = 0.01; // Max +/- 1% of radius
+              
+              const breathingTime = elapsed * 0.001 * breathingRate;
+              const breathingScale = 1 + (Math.sin(breathingTime) * breathingAmplitude);
+              const currentRadius = baseRadius * breathingScale;
+              
+              circle.attr('r', currentRadius);
+            } else {
+              // Types 2 & 3: Original complex breathing effect
+              const breathingRate = 0.8 + (layer * 0.1); // 0.8 to 1.8 seconds per breath cycle
+              const breathingAmplitude = 0.05 + (layer * 0.02); // 5% to 15% size variation
+              const breathingPhase = layer * 0.5; // Stagger the phases
+              
+              const breathingTime = elapsed * 0.001 * breathingRate + breathingPhase;
+              const breathingScale = 1 + (Math.sin(breathingTime) * breathingAmplitude);
+              const currentRadius = baseRadius * breathingScale;
+              
+              circle.attr('r', currentRadius);
+            }
+          }
+        });
+      }
     });
+
+    // Type 3 Dematerialization Logic
+    if (opts.mode === 'type3') {
+      // Check if balloons have stopped moving (after freeze period)
+      if (elapsed > slowDownEnd) {
+        // Debug: Log when we're in the dematerialization phase
+        if (elapsed > slowDownEnd && !state.dematerializationPhaseStarted) {
+          console.log(`Type 3 dematerialization phase started at ${elapsed.toFixed(0)}ms (slowDownEnd: ${slowDownEnd}ms)`);
+          state.dematerializationPhaseStarted = true;
+        }
+        
+        // Debug: Log current elapsed time every 2 seconds
+        if (Math.floor(elapsed / 2000) !== Math.floor((elapsed - 16) / 2000)) {
+          console.log(`Type 3 animation running at ${elapsed.toFixed(0)}ms`);
+        }
+        nodes.forEach((node, i) => {
+          // Mark when this balloon stops moving (first time we enter the dematerialization phase)
+          if (!node.stoppedMovingTime) {
+            node.stoppedMovingTime = elapsed;
+            console.log(`Balloon ${i} stopped moving at ${elapsed.toFixed(0)}ms`);
+          }
+          
+          // Schedule dematerialization if not already scheduled and balloon hasn't been dematerialized
+          if (!node.dematerializationScheduled && !node.isDematerialized && !node.isDematerializing) {
+            // Random time to live between 45-90 seconds after THIS balloon stopped moving
+            const timeToLive = 45000 + Math.random() * 45000; // 45-90 seconds
+            node.dematerializationTime = node.stoppedMovingTime + timeToLive;
+            node.dematerializationScheduled = true;
+            console.log(`Balloon ${i} scheduled for dematerialization in ${timeToLive.toFixed(0)}ms (${(timeToLive/1000).toFixed(1)}s) from when it stopped moving`);
+          }
+          
+          // Check if it's time to start dematerialization
+          if (node.dematerializationScheduled && !node.isDematerializing && !node.isDematerialized && 
+              elapsed >= node.dematerializationTime) {
+            console.log(`Triggering dematerialization for balloon ${i} at elapsed time ${elapsed.toFixed(0)}ms`);
+            startDematerialization(state, i);
+          }
+        });
+      }
+    }
 
     // Don't freeze based on introDurationMs - let the zero gravity timing control the freeze
     // if (elapsed >= state.introDurationMs) {
@@ -299,7 +403,7 @@
     //   }
     // }
 
-    if (!state.frozen) requestAnimationFrame(() => animateRAF(state));
+    if (!state.frozen) requestAnimationFrame(() => animateRAF(state, opts));
   }
 
   function type2Swirl(svg, dims, opts) {
@@ -369,7 +473,7 @@
             .attr('stroke-width', 1)
             .transition()
             .delay(constructionDelay)
-            .duration(720) // Landing page duration
+            .duration(3600) // 5x slower than original (720 * 5)
             .attr('r', r)
             .attr('opacity', transparency);
         }
@@ -384,7 +488,7 @@
         microDrift: false,
         t0: performance.now()
       };
-      requestAnimationFrame(() => animateRAF(state));
+      requestAnimationFrame(() => animateRAF(state, opts));
       return;
     }
 
@@ -448,7 +552,7 @@
             .attr('opacity', 0)
             .transition()
             .delay(constructionDelay)
-            .duration(720) // Landing page duration
+            .duration(3600) // 5x slower than original (720 * 5)
             .attr('r', r)
             .attr('opacity', transparency);
         }
@@ -457,6 +561,15 @@
       // Apply mask to background rectangle
       svg.select('rect').attr('mask', 'url(#type3Mask)');
 
+      // Initialize dematerialization tracking for Type 3
+      nodes.forEach((node, i) => {
+        node.dematerializationScheduled = false;
+        node.dematerializationTime = null;
+        node.isDematerializing = false;
+        node.isDematerialized = false;
+        node.stoppedMovingTime = null; // Track when this balloon stopped moving
+      });
+
       const state = {
         groups, nodes,
         width: dims.width, height: dims.height,
@@ -464,9 +577,12 @@
         keepDrift: !!opts.keepDrift,
         frozen: false,
         microDrift: false,
-        t0: performance.now()
+        t0: performance.now(),
+        svg: svg, // Add svg reference for dematerialization
+        dims: dims, // Add dims reference for new balloon creation
+        opts: opts // Add opts reference for new balloon creation
       };
-      requestAnimationFrame(() => animateRAF(state));
+      requestAnimationFrame(() => animateRAF(state, opts));
       return;
     }
 
@@ -480,6 +596,9 @@
       const centerY = nodes.reduce((sum, n) => sum + n.y, 0) / nodes.length;
       
       nodes.forEach((n, i) => { 
+        // Assign random breathing rate to each balloon (2-3 seconds cycle)
+        n.breathingRate = 2 + Math.random(); // Random between 2-3 seconds
+        
         if (i === 0) {
           // Make the first balloon yellow, max size, position in center, and move upwards
           n.color = yellow;
@@ -516,7 +635,7 @@
         microDrift: false,
         t0: performance.now()
       };
-      requestAnimationFrame(() => animateRAF(state));
+      requestAnimationFrame(() => animateRAF(state, opts));
       return;
     }
 
@@ -538,12 +657,200 @@
       microDrift: false,
       t0: performance.now()
     };
-    requestAnimationFrame(() => animateRAF(state));
+    requestAnimationFrame(() => animateRAF(state, opts));
   }
 
   function type1Cluster(svg, dims, opts) {
     // Use identical Type 2 behavior for Type 1
     return type2Swirl(svg, dims, opts);
+  }
+
+  function startDematerialization(state, balloonIndex) {
+    const node = state.nodes[balloonIndex];
+    const group = state.groups[balloonIndex];
+    
+    console.log(`Starting dematerialization for balloon ${balloonIndex}`);
+    node.isDematerializing = true;
+    node.dematerializationStartTime = performance.now();
+    
+    // Get all circles in this balloon group
+    const circles = group.selectAll('circle');
+    const circleNodes = circles.nodes();
+    
+    console.log(`Dematerializing ${circleNodes.length} circles for balloon ${balloonIndex}`);
+    
+    // Let each layer complete its own dematerialization
+    // The last layer to finish will trigger the completion
+    let completedLayers = 0;
+    const totalLayers = circleNodes.length;
+    
+    // Dematerialize each layer (reverse of materialization)
+    circles.each(function(d, i) {
+      const circle = d3.select(this);
+      const layer = i; // Use index as layer since data binding isn't working
+      
+      // Calculate dematerialization delay (reverse of construction)
+      const maxLayer = circleNodes.length - 1;
+      const distanceFromEdge = Math.min(layer, maxLayer - layer);
+      const dematerializationDelay = distanceFromEdge * 150; // Same as construction delay
+      
+      console.log(`  Circle ${i}: layer=${layer}, distanceFromEdge=${distanceFromEdge}, delay=${dematerializationDelay}ms`);
+      
+      // Dematerialize (mirror front page deconstruction timing)
+      circle.transition()
+        .delay(dematerializationDelay)
+        .duration(21600) // 6x slower than materialization (3600 * 6)
+        .attr('r', 0)
+        .attr('opacity', 0)
+        .on('end', function() {
+          completedLayers++;
+          console.log(`Layer ${layer} dematerialized (${completedLayers}/${totalLayers})`);
+          if (completedLayers === totalLayers) {
+            completeDematerialization(state, balloonIndex);
+          }
+        });
+    });
+  }
+  
+  function completeDematerialization(state, balloonIndex) {
+    const node = state.nodes[balloonIndex];
+    console.log(`Balloon ${balloonIndex} fully dematerialized, creating replacement`);
+    
+    node.isDematerialized = true;
+    node.isDematerializing = false;
+    
+    // Create a new balloon to replace the dematerialized one
+    createNewBalloon(state, balloonIndex);
+  }
+  
+  function createNewBalloon(state, balloonIndex) {
+    const { svg, dims, opts, nodes, groups } = state;
+    const oldNode = nodes[balloonIndex];
+    
+    console.log(`Creating new balloon ${balloonIndex} to replace dematerialized balloon`);
+    
+    // Helper function to find best spawn position for new balloon (anti-clustering)
+    function findBestNewBalloonPosition(existingNodes, width, topBoundary) {
+      const leftBound = 0.5 + 100/width; // Right portion start (center + 100px)
+      const rightBound = 1.0; // Right edge
+      
+      let bestX = 0;
+      let maxMinDistance = 0;
+      
+      // Try multiple random positions and pick the one with maximum minimum distance
+      for (let attempt = 0; attempt < 15; attempt++) { // More attempts for new balloons
+        const candidateX = (Math.random() * (rightBound - leftBound) + leftBound) * width;
+        
+        // Calculate minimum distance to any existing balloon
+        let minDistToExisting = Infinity;
+        for (const existingNode of existingNodes) {
+          if (existingNode && !existingNode.isDematerialized) { // Only consider active balloons
+            const dx = candidateX - existingNode.x;
+            const dy = topBoundary - existingNode.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            minDistToExisting = Math.min(minDistToExisting, distance);
+          }
+        }
+        
+        // If this is the best position so far, keep it
+        if (minDistToExisting > maxMinDistance) {
+          maxMinDistance = minDistToExisting;
+          bestX = candidateX;
+        }
+      }
+      
+      return bestX;
+    }
+    
+    // Create new balloon that spawns at top and falls down
+    const topBoundary = 60; // Navigation bar height
+    const bestX = findBestNewBalloonPosition(nodes, dims.width, topBoundary);
+    
+    try {
+      // Create balloon with anti-clustering positioning
+      const newNodes = makeNodes(1, opts.layerRange, dims.width, dims.height, topBoundary, [0.5 + 100/dims.width, 1], 0.15);
+      const newNode = newNodes[0];
+      
+      // Override the X position with our anti-clustered position
+      if (newNode) {
+        newNode.x = bestX;
+        newNode.originalX = bestX;
+      }
+      
+      if (!newNode) {
+        console.error(`Failed to create new balloon ${balloonIndex}: makeNodes returned empty array`);
+        return;
+      }
+    
+      // Copy properties from old node
+      newNode.dematerializationScheduled = false;
+      newNode.dematerializationTime = null;
+      newNode.isDematerializing = false;
+      newNode.isDematerialized = false;
+      newNode.stoppedMovingTime = null; // Reset for new balloon
+      
+      // Add velocity properties for falling balloons (new balloons fall down)
+      const minFallSpeed = 0.5 * 1.3 * 1.3; // Increased by 30% (0.5 * 1.3 * 1.3 = 0.845)
+      const maxFallSpeed = 2.0 * 1.3 * 1.3; // Increased by 30% (2.0 * 1.3 * 1.3 = 3.38)
+      const fallSpeed = Math.random() * (maxFallSpeed - minFallSpeed) + minFallSpeed;
+      
+      // Small horizontal drift
+      const horizontalDrift = (Math.random() - 0.5) * 0.5; // -0.25 to 0.25
+      
+      newNode.vx = horizontalDrift; // Small horizontal movement
+      newNode.vy = fallSpeed; // Downward fall speed (increased by 30%)
+      newNode.velocity = fallSpeed;
+      newNode.angle = Math.PI / 2; // Downward direction
+      newNode.gravityFactor = newNode.baseSize / 50; // Gravity factor proportional to radius
+      
+      console.log(`New balloon ${balloonIndex} velocity: vx=${newNode.vx.toFixed(2)}, vy=${newNode.vy.toFixed(2)}, gravityFactor=${newNode.gravityFactor.toFixed(2)}`);
+      
+      // Replace the old node
+      nodes[balloonIndex] = newNode;
+      
+      // Create new group for the new balloon
+      const mask = svg.select('#type3Mask g');
+      if (mask.empty()) {
+        console.error(`Failed to find Type 3 mask for new balloon ${balloonIndex}`);
+        return;
+      }
+      
+      const newGroup = mask.append('g').attr('transform', `translate(${newNode.x}, ${newNode.y})`);
+      groups[balloonIndex] = newGroup;
+    
+      // Materialize the new balloon
+      const materializationStart = Math.random() * 1500; // 0-1.5 seconds
+      const bubbleOpacity = opts.bubbleOpacity || 0.8;
+      
+      console.log(`Creating new balloon ${balloonIndex} at position (${newNode.x.toFixed(1)}, ${newNode.y.toFixed(1)})`);
+      
+      for (let layer = 0; layer < newNode.layers; layer++) {
+        const norm = newNode.layers <= 1 ? 1 : layer / (newNode.layers - 1);
+        const curvedGrowth = Math.pow(norm, 1.75);
+        const r = Math.max(1, newNode.baseSize * (0.3 + curvedGrowth * 0.5));
+        
+        const maxLayer = newNode.layers - 1;
+        const distanceFromEdge = Math.min(layer, maxLayer - layer);
+        const constructionDelay = materializationStart + (distanceFromEdge * 150);
+        
+        const transparency = Math.max(0.0, bubbleOpacity - (layer * 0.05));
+        
+        newGroup.append('circle')
+          .attr('r', 0)
+          .attr('fill', 'black')
+          .attr('opacity', 0)
+          .transition()
+          .delay(constructionDelay)
+          .duration(3600) // 5x slower than original (720 * 5)
+          .attr('r', r)
+          .attr('opacity', transparency);
+      }
+      
+      console.log(`New balloon ${balloonIndex} created and materializing`);
+      
+    } catch (error) {
+      console.error(`Error creating new balloon ${balloonIndex}:`, error);
+    }
   }
 
   function initInnerBalloons(options) {
