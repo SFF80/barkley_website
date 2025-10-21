@@ -115,60 +115,134 @@ Type 4 creates a single prominent yellow balloon that acts as a "rising sun" amo
 }
 ```
 
-### Type 3 Construction Plan (Inverted Transparency)
-Type 3 creates bubbles of translucency→transparency in a solid background color, where overlapping bubbles become MORE transparent (not less).
+### Type 3 Construction Plan (Inverted Transparency with Continuous Cycling)
+Type 3 creates bubbles of translucency→transparency in a solid background color, where overlapping bubbles become MORE transparent (not less), with continuous balloon cycling and enhanced movement dynamics.
 
 **Core Concept:**
 - **Solid background layer**: Completely opaque base color (e.g., white, blue, brand color)
 - **Bubble "holes"**: Bubbles act as "erasers" that remove opacity from the background
 - **Inverted transparency**: More overlapping bubbles = more background color visible
-- **Total transparency**: Achieved at 16th internal bubble (0% opacity)
+- **Continuous cycling**: New balloons materialize simultaneously as old ones dematerialize
+- **Enhanced movement**: Faster speeds, stronger repulsive forces, and dynamic lifecycle
 
-**Implementation Method:**
-1. **Background rectangle**: Solid color fill (100% opacity) covering entire area
-2. **Bubble mask system**: Bubbles subtract opacity from the background using SVG masks or blend modes
-3. **Flattened transparency curve**: Each layer contributes only 5% increase in transparency
-   - Layer 0: 80% opacity (20% background visible)
-   - Layer 1: 75% opacity (25% background visible)
-   - Layer 2: 70% opacity (30% background visible)
-   - Layer 3: 65% opacity (35% background visible)
-   - Layer 4: 60% opacity (40% background visible)
-   - Layer 5: 55% opacity (45% background visible)
-   - Layer 6: 50% opacity (50% background visible)
-   - Layer 7: 45% opacity (55% background visible)
-   - Layer 8: 40% opacity (60% background visible)
-   - Layer 9: 35% opacity (65% background visible)
-   - Layer 10: 30% opacity (70% background visible)
-   - Layer 11: 25% opacity (75% background visible)
-   - Layer 12: 20% opacity (80% background visible)
-   - Layer 13: 15% opacity (85% background visible)
-   - Layer 14: 10% opacity (90% background visible)
-   - Layer 15: 5% opacity (95% background visible)
-   - Layer 16+: 0% opacity (100% background visible - total transparency)
-4. **Gradual transparency**: Each additional layer reduces bubble opacity by only 5%, creating smooth transitions
+**Current Implementation Parameters:**
+- **Balloon count**: 5 balloons (increased from 3)
+- **Layer count**: 14-24 layers (proportional to balloon radius, 3x baseline + 50% minimum)
+- **Size variation**: 20% min to max (80% to 100% of maximum size)
+- **Speed enhancement**: 50% faster initial fall speed + 30% overall speed multiplier
+- **Repulsive force**: 0.125 (25% increase from 0.1)
+- **Boundary**: Right portion only (center + 100px to right edge)
+- **Anti-clustering**: Intelligent spawn positioning to prevent overlapping
 
-**Visual Effect:**
-- **Base layer**: Solid colored "wall"
-- **Bubble layer**: Creates progressively larger "windows" in the wall
-- **Overlap areas**: Become "holes" showing pure background color
-- **Result**: Areas with many overlapping bubbles become transparent windows
+**Movement Dynamics:**
+- **Spawn location**: Top boundary (navigation bar level, 60px from top)
+- **Initial velocity**: Enhanced fall speed with horizontal drift
+- **Boundary bouncing**: Left/right walls with 20% momentum loss
+- **Velocity reduction**: 50% speed reduction after first bottom bounce
+- **Repulsive forces**: Inverse square law with 0.125 strength multiplier
+
+**Lifecycle Management:**
+- **Time to live**: 45-90 seconds per balloon
+- **Dematerialization**: Center-outwards opacity fade (no size change)
+- **Simultaneous replacement**: New balloon materializes as old one starts dematerializing
+- **Seamless transition**: Always maintains exactly 5 visible balloons
+
+**Transparency System:**
+- **Background**: Solid white (#ffffff) with 100% opacity
+- **Bubble opacity**: 0.8 starting opacity for single bubbles
+- **Layer progression**: 14-24 layers with proportional radius scaling
+- **Transparency curve**: Each layer contributes to cumulative transparency
+- **Total transparency**: Achieved through layer stacking
 
 **Technical Implementation:**
-- **SVG mask approach**: Use `mask` with white background and black bubbles
-- **Blend mode approach**: Use `mix-blend-mode: multiply` or custom opacity stacking
-- **Opacity stacking**: Calculate cumulative transparency based on overlap count
-- **Background color**: Configurable via `backgroundColor` option
+- **SVG mask system**: White background with black bubbles for transparency holes
+- **Anti-clustering algorithm**: 10-15 position attempts to maximize distance from existing balloons
+- **Proportional layers**: `minLayers + (maxLayers - minLayers) * sizeRatio`
+- **Simultaneous cycling**: `createNewBalloon()` called immediately in `startDematerialization()`
+- **Velocity tracking**: `hasBouncedBottom` flag for post-bounce speed reduction
 
 **Configuration Options:**
 ```js
 {
   mode: 'type3',
+  nodeCount: 5,                     // Number of balloons
   backgroundColor: '#ffffff',        // Solid background color
   bubbleOpacity: 0.8,               // Starting opacity for single bubbles
-  transparencySteps: 16,            // Number of steps to total transparency (flattened curve)
-  blendMode: 'multiply'             // SVG blend mode for opacity calculation
+  transparencySteps: 5,             // Number of steps to total transparency
+  layerRange: [14, 24],            // Min/max layers (proportional to radius)
+  constructWindowPct: [0.5, 0.95],  // Right portion positioning
+  keepDrift: false,                // Animation continues for dematerialization
+  introDurationMs: 6000            // Movement time before slowdown
 }
 ```
+
+**Build Instructions for Type 3:**
+
+1. **Initialize Type 3 Animation:**
+   ```js
+   initInnerBalloons({
+     mode: 'type3',
+     containerSelector: '.inner-balloons',
+     svgId: 'inner-balloons-svg',
+     nodeCount: 5,
+     backgroundColor: '#ffffff',
+     bubbleOpacity: 0.8,
+     transparencySteps: 5,
+     constructWindowPct: [0.5, 0.95],
+     keepDrift: false,
+     introDurationMs: 6000
+   });
+   ```
+
+2. **HTML Structure:**
+   ```html
+   <section class="inner-hero">
+     <div class="inner-balloons">
+       <svg id="inner-balloons-svg"></svg>
+     </div>
+     <div class="inner-hero-content">
+       <h1>Page Title</h1>
+       <p>Supporting content</p>
+     </div>
+   </section>
+   ```
+
+3. **CSS Requirements:**
+   ```css
+   .inner-hero {
+     position: relative;
+     overflow: hidden;
+     min-height: 60vh;
+     max-height: 680px;
+   }
+   
+   .inner-balloons {
+     position: absolute;
+     inset: 0;
+     z-index: 5;
+     pointer-events: none;
+   }
+   
+   .inner-hero-content {
+     position: relative;
+     z-index: 10;
+   }
+   ```
+
+4. **Expected Behavior:**
+   - 5 balloons spawn at top boundary in right portion
+   - Enhanced speed with horizontal drift and repulsive forces
+   - Anti-clustering prevents overlapping spawn positions
+   - Continuous cycling: new balloons appear as old ones fade
+   - Velocity reduction after first bottom bounce
+   - Seamless transitions maintain constant balloon count
+
+**Visual Effect:**
+- **Dynamic movement**: Fast, energetic balloon motion with natural physics
+- **Continuous flow**: Seamless balloon replacement without gaps
+- **Professional transparency**: Smooth opacity gradients with proportional layering
+- **Spatial distribution**: Well-spaced balloons avoiding clustering
+- **Settling behavior**: Balloons become more controlled after bouncing
 
 Public API (config object in `initInnerBalloons(options)`):
 ```js
@@ -271,6 +345,22 @@ Accessibility:
 - Type 4 mode: Yellow balloon rendered in front, moves upwards, positioned at cluster center
 - Blue section renders with correct spacing and responsive behavior
 - Footer present and consistent
+
+## Type 3 Specific Acceptance Checklist
+- **Balloon count**: Exactly 5 balloons visible at all times
+- **Continuous cycling**: New balloons materialize simultaneously as old ones dematerialize
+- **Enhanced movement**: 50% faster initial speed + 30% overall speed multiplier
+- **Anti-clustering**: Balloons spawn with intelligent positioning to prevent overlapping
+- **Proportional layers**: 14-24 layers based on balloon radius (3x baseline + 50% minimum)
+- **Size variation**: 20% min to max (80% to 100% of maximum size)
+- **Boundary positioning**: Right portion only (center + 100px to right edge)
+- **Spawn location**: Top boundary (navigation bar level, 60px from top)
+- **Repulsive forces**: 0.125 strength with inverse square law
+- **Velocity reduction**: 50% speed reduction after first bottom bounce
+- **Dematerialization**: Center-outwards opacity fade (no size change)
+- **Time to live**: 45-90 seconds per balloon
+- **Seamless transitions**: No gaps or pauses in balloon count
+- **Professional transparency**: Smooth opacity gradients with proportional layering
 
 ## Next Steps
 1. Create `animations/inner-balloons.js` implementing `initInnerBalloons(options)` using landing specs

@@ -54,15 +54,15 @@
     return { cx: relativeToRect.width * 0.5, cy };
   }
 
-  function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed, mode = 'default') {
+  function makeNodes(count, rangeLayers, width, height, yCenter, constructWindowPct, baseSpeed, mode = 'default', options = {}) {
     // Use the provided count parameter instead of hardcoded range
     const actualCount = count;
     const nodes = [];
     
     // Helper function to find best spawn position (furthest from existing balloons)
-    function findBestSpawnPosition(existingNodes, width, topBoundary) {
-      const leftBound = 0.5 + 100/width; // Right portion start (center + 100px)
-      const rightBound = 1.0; // Right edge
+    function findBestSpawnPosition(existingNodes, width, topBoundary, constructWindowPct) {
+      const leftBound = constructWindowPct[0]; // Use configuration
+      const rightBound = constructWindowPct[1]; // Use configuration
       const minDistance = 150; // Minimum distance from existing balloons
       
       let bestX = 0;
@@ -92,19 +92,28 @@
     }
     
     for (let i = 0; i < actualCount; i++) {
-      const maxSize = 140.96 * 1.4; // Maximum balloon size increased by 40%
-      const minSize = maxSize * 0.8; // 80% of maximum size (20% variation)
+      // Use type-specific size multipliers from configuration
+      const baseMaxSize = 140.96 * 1.4; // Base maximum size (197.34)
+      const baseMinSize = baseMaxSize * 0.8; // Base minimum size (157.87)
+      
+      // Get size multipliers from the configuration (passed via options)
+      const sizeMultiplier = options?.sizeMultiplier || 1.0;
+      const minSizeMultiplier = options?.minSizeMultiplier || 0.8;
+      
+      const maxSize = baseMaxSize * sizeMultiplier;
+      const minSize = baseMinSize * minSizeMultiplier;
       const baseSize = Math.random() * (maxSize - minSize) + minSize; // Range from 80% to 100% of max
       
-      // Make number of layers proportional to balloon radius
-      const minLayers = 14; // Minimum layers for smallest balloons (3x baseline + 50%)
-      const maxLayers = 24; // Maximum layers for largest balloons (3x baseline)
+      // Make number of layers proportional to balloon radius - use type-specific range
+      const layerRange = options?.layerRange || [14, 24];
+      const minLayers = layerRange[0];
+      const maxLayers = layerRange[1];
       const sizeRatio = (baseSize - minSize) / (maxSize - minSize); // 0 to 1
       const layers = Math.floor(minLayers + (maxLayers - minLayers) * sizeRatio);
       
-      // Use anti-clustering positioning
-      const topBoundary = 60; // Navigation bar height
-      const x = findBestSpawnPosition(nodes, width, topBoundary);
+        // Use anti-clustering positioning
+        const topBoundary = 60; // Navigation bar height
+        const x = findBestSpawnPosition(nodes, width, topBoundary, constructWindowPct);
       
       // All balloons spawn at top boundary and drift down
       let minFallSpeed = 0.5 * 1.3 * 1.3; // Increased by 30% (0.5 * 1.3 * 1.3 = 0.845)
@@ -199,8 +208,8 @@
   }
 
   function animateRAF(state, opts) {
-    // For Type 3, don't stop the animation loop even when "frozen" - we need it for dematerialization
-    if (state.frozen && opts.mode !== 'type3') return;
+    // For Type 2 and Type 3, don't stop the animation loop even when "frozen" - we need it for dematerialization
+    if (state.frozen && opts.mode !== 'type2' && opts.mode !== 'type3') return;
     const { groups, nodes, t0, microDrift, width, height } = state;
     const now = performance.now();
     const elapsed = now - t0;
@@ -225,8 +234,8 @@
       } else {
         // After slowdown, maintain very slow movement
         speedMultiplier = speedMultiplier * 0.1;
-        // Don't freeze for Type 3 - we need the animation loop to continue for dematerialization
-        if (!state.keepDrift && opts.mode !== 'type3') {
+        // Don't freeze for Type 2 and Type 3 - we need the animation loop to continue for dematerialization
+        if (!state.keepDrift && opts.mode !== 'type2' && opts.mode !== 'type3') {
           state.frozen = true;
         }
       }
@@ -249,9 +258,10 @@
             const repulsiveStrength = 1 / (distance * distance); // Inverse square law
             const repulsiveAngle = Math.atan2(dy, dx);
             
-            // Apply directional repulsive force (both X and Y components)
-            const repulsiveX = Math.cos(repulsiveAngle) * repulsiveStrength * 0.125; // Increased by 25% (0.1 * 1.25 = 0.125)
-            const repulsiveY = Math.sin(repulsiveAngle) * repulsiveStrength * 0.125; // Increased by 25% (0.1 * 1.25 = 0.125)
+            // Apply directional repulsive force (both X and Y components) - type-specific
+            const repulsiveForceMultiplier = opts.repulsiveForce || 0.02;
+            const repulsiveX = Math.cos(repulsiveAngle) * repulsiveStrength * repulsiveForceMultiplier;
+            const repulsiveY = Math.sin(repulsiveAngle) * repulsiveStrength * repulsiveForceMultiplier;
             
             repulsiveForceX += repulsiveX;
             repulsiveForceY += repulsiveY;
@@ -338,8 +348,8 @@
       // Update position - works for both regular balloons and mask elements
       groups[i].attr('transform', `translate(${d.x}, ${d.y + breathingOffset})`);
       
-      // Add breathing effect to inner circles for Types 2, 3, and 4
-      if (opts.mode === 'type2' || opts.mode === 'type3' || opts.mode === 'type4' || opts.mode === 'colored' || opts.mode === 'transparent') {
+        // Add breathing effect based on type-specific configuration
+        if (opts.breathingEnabled) {
         groups[i].selectAll('circle').each(function(circleData) {
           if (circleData && circleData.layerSize) {
             const circle = d3.select(this);
@@ -358,7 +368,7 @@
               
               circle.attr('r', currentRadius);
             } else {
-              // Types 2 & 3: Original complex breathing effect
+              // Type 3: Original complex breathing effect
               const breathingRate = 0.8 + (layer * 0.1); // 0.8 to 1.8 seconds per breath cycle
               const breathingAmplitude = 0.05 + (layer * 0.02); // 5% to 15% size variation
               const breathingPhase = layer * 0.5; // Stagger the phases
@@ -374,19 +384,19 @@
       }
     });
 
-    // Type 3 Dematerialization Logic
-    if (opts.mode === 'type3') {
+    // Type 2 and Type 3 Dematerialization Logic (continuous cycling)
+    if (opts.mode === 'type2' || opts.mode === 'type3') {
       // Check if balloons have stopped moving (after freeze period)
       if (elapsed > slowDownEnd) {
         // Debug: Log when we're in the dematerialization phase
         if (elapsed > slowDownEnd && !state.dematerializationPhaseStarted) {
-          console.log(`Type 3 dematerialization phase started at ${elapsed.toFixed(0)}ms (slowDownEnd: ${slowDownEnd}ms)`);
+          console.log(`${opts.mode} dematerialization phase started at ${elapsed.toFixed(0)}ms (slowDownEnd: ${slowDownEnd}ms)`);
           state.dematerializationPhaseStarted = true;
         }
         
         // Debug: Log current elapsed time every 2 seconds
         if (Math.floor(elapsed / 2000) !== Math.floor((elapsed - 16) / 2000)) {
-          console.log(`Type 3 animation running at ${elapsed.toFixed(0)}ms`);
+          console.log(`${opts.mode} animation running at ${elapsed.toFixed(0)}ms`);
         }
         nodes.forEach((node, i) => {
           // Mark when this balloon stops moving (first time we enter the dematerialization phase)
@@ -398,7 +408,9 @@
           // Schedule dematerialization if not already scheduled and balloon hasn't been dematerialized
           if (!node.dematerializationScheduled && !node.isDematerialized && !node.isDematerializing) {
             // Random time to live between 45-90 seconds after THIS balloon stopped moving
-            const timeToLive = 45000 + Math.random() * 45000; // 45-90 seconds
+            // Use type-specific timeToLive configuration
+            const timeToLiveRange = opts.timeToLive || [45, 90];
+            const timeToLive = timeToLiveRange[0] * 1000 + Math.random() * (timeToLiveRange[1] - timeToLiveRange[0]) * 1000;
             node.dematerializationTime = node.stoppedMovingTime + timeToLive;
             node.dematerializationScheduled = true;
             console.log(`Balloon ${i} scheduled for dematerialization in ${timeToLive.toFixed(0)}ms (${(timeToLive/1000).toFixed(1)}s) from when it stopped moving`);
@@ -435,11 +447,21 @@
 
     // Widen safe band to keep clear of left text column
     const windowPct = opts.constructWindowPct || [0.14, 0.86];
-    const nodes = makeNodes(opts.nodeCount, opts.layerRange, dims.width, dims.height, yAnchor, windowPct, 0.15, opts.mode);
+    const nodes = makeNodes(opts.nodeCount, opts.layerRange, dims.width, dims.height, yAnchor, windowPct, 0.15, opts.mode, opts);
     
-    // Add velocity properties to transparent balloons
+    // Add velocity properties and set colors based on type configuration
     nodes.forEach((n, i) => { 
-      n.color = colorPool[i % colorPool.length];
+      // Set color based on type-specific configuration
+      if (opts.balloonColor === 'white') {
+        n.color = 'white';
+      } else if (opts.balloonColor === 'colored') {
+        n.color = colorPool[i % colorPool.length];
+      } else if (opts.balloonColor === 'transparent') {
+        n.color = 'transparent';
+      } else if (opts.balloonColor === 'mixed') {
+        // Type 4: first balloon is yellow, others are white
+        n.color = (i === 0) ? opts.yellowColor : opts.whiteColor;
+      }
       // Add velocity properties for transparent balloons
       const velocity = Math.random() * 1.0 + 0.5; // Random velocity between 0.5-1.5
       const angle = Math.random() * Math.PI * 2; // Random direction
@@ -453,8 +475,38 @@
         console.log(`Transparent balloon ${i}: velocity=${velocity.toFixed(2)}, angle=${angle.toFixed(2)}, vx=${n.vx.toFixed(2)}, vy=${n.vy.toFixed(2)}`);
       }
     });
+    
+    // Type 4 specific post-processing: center positioning, max size, upward movement
+    if (opts.balloonColor === 'mixed') {
+      // Find the yellow balloon (first balloon)
+      const yellowBalloon = nodes[0];
+      
+      if (opts.centerPositioning) {
+        // Calculate cluster center
+        const centerX = nodes.reduce((sum, n) => sum + n.x, 0) / nodes.length;
+        const centerY = nodes.reduce((sum, n) => sum + n.y, 0) / nodes.length;
+        
+        // Position yellow balloon at cluster center
+        yellowBalloon.x = centerX;
+        yellowBalloon.y = centerY;
+        console.log(`Type 4: Yellow balloon positioned at cluster center (${centerX.toFixed(1)}, ${centerY.toFixed(1)})`);
+      }
+      
+      if (opts.maxSize) {
+        // Yellow balloon gets maximum size from all balloons
+        const maxSize = Math.max(...nodes.map(n => n.baseSize));
+        yellowBalloon.baseSize = maxSize;
+        console.log(`Type 4: Yellow balloon size set to maximum (${maxSize.toFixed(1)})`);
+      }
+      
+      if (opts.upwardMovement) {
+        // Yellow balloon moves upward (negative Y velocity)
+        yellowBalloon.vy = -Math.abs(yellowBalloon.vy);
+        console.log(`Type 4: Yellow balloon velocity set to upward (${yellowBalloon.vy.toFixed(2)})`);
+      }
+    }
 
-    if (opts.mode === 'transparent') {
+    if (opts.mode === 'transparent' || opts.mode === 'type2') {
       svg.selectAll('*').remove();
       
       // Create balloons directly on SVG (not in mask) for visible concentric circles
@@ -500,6 +552,17 @@
         }
       });
 
+      // Initialize dematerialization tracking for Type 2 (if continuous cycling is enabled)
+      if (opts.continuousCycling) {
+        nodes.forEach((node, i) => {
+          node.dematerializationScheduled = false;
+          node.dematerializationTime = null;
+          node.isDematerializing = false;
+          node.isDematerialized = false;
+          node.stoppedMovingTime = null; // Track when this balloon stopped moving
+        });
+      }
+
       const state = {
         groups, nodes,
         width: dims.width, height: dims.height,
@@ -507,7 +570,10 @@
         keepDrift: !!opts.keepDrift,
         frozen: false,
         microDrift: false,
-        t0: performance.now()
+        t0: performance.now(),
+        svg: svg, // Add svg reference for dematerialization
+        dims: dims, // Add dims reference for new balloon creation
+        opts: opts // Add opts reference for new balloon creation
       };
       requestAnimationFrame(() => animateRAF(state, opts));
       return;
@@ -564,6 +630,7 @@
           // More overlapping bubbles = more background visible
           // Flattened curve: each layer contributes max 5% increase in transparency
           const transparency = Math.max(0.0, bubbleOpacity - (layer * 0.05)); // 5% per layer
+          // Note: This creates the "swiss cheese" effect where bubbles create holes in the background
           
           console.log(`  Layer ${layer}: radius=${r.toFixed(1)}, transparency=${transparency.toFixed(2)}, delay=${constructionDelay}ms`);
           
@@ -643,7 +710,7 @@
       });
       const groups = sortedNodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
 
-      const opacityFn = (layer, total) => clamp(0.3 + (0.6 - 0.1 * layer), 0.2, 0.8); // More visible opacity range
+      const opacityFn = (layer, total) => clamp(0.24 + (0.48 - 0.08 * layer), 0.16, 0.64); // 20% more transparent (0.3*0.8=0.24, 0.6*0.8=0.48, 0.1*0.8=0.08, 0.2*0.8=0.16, 0.8*0.8=0.64)
       const delays = { constructStep: 150, constructDuration: 720 };
       groups.forEach((gr, idx) => appendLayers(gr, sortedNodes[idx], opts.curvedExponent, opacityFn, delays));
 
@@ -660,12 +727,12 @@
       return;
     }
 
-    // Colored type2
-    nodes.forEach((n, i) => { n.color = colorPool[i % colorPool.length]; });
+    // White type2
+    nodes.forEach((n, i) => { n.color = 'white'; });
     const g = svg.append('g');
     const groups = nodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
 
-    const opacityFn = (layer, total) => clamp(0.3 + (0.6 - 0.1 * layer), 0.2, 0.8); // More visible opacity range
+    const opacityFn = (layer, total) => clamp(0.24 + (0.48 - 0.08 * layer), 0.16, 0.64); // 20% more transparent (0.3*0.8=0.24, 0.6*0.8=0.48, 0.1*0.8=0.08, 0.2*0.8=0.16, 0.8*0.8=0.64)
     const delays = { constructStep: 150, constructDuration: 720 };
     groups.forEach((gr, idx) => appendLayers(gr, nodes[idx], opts.curvedExponent, opacityFn, delays));
 
@@ -752,9 +819,9 @@
     console.log(`Creating new balloon ${balloonIndex} to replace dematerialized balloon`);
     
     // Helper function to find best spawn position for new balloon (anti-clustering)
-    function findBestNewBalloonPosition(existingNodes, width, topBoundary) {
-      const leftBound = 0.5 + 100/width; // Right portion start (center + 100px)
-      const rightBound = 1.0; // Right edge
+    function findBestNewBalloonPosition(existingNodes, width, topBoundary, constructWindowPct) {
+      const leftBound = constructWindowPct[0]; // Use configuration
+      const rightBound = constructWindowPct[1]; // Use configuration
       
       let bestX = 0;
       let maxMinDistance = 0;
@@ -786,11 +853,11 @@
     
     // Create new balloon that spawns at top and falls down
     const topBoundary = 60; // Navigation bar height
-    const bestX = findBestNewBalloonPosition(nodes, dims.width, topBoundary);
+    const bestX = findBestNewBalloonPosition(nodes, dims.width, topBoundary, opts.constructWindowPct);
     
     try {
       // Create balloon with anti-clustering positioning
-      const newNodes = makeNodes(1, opts.layerRange, dims.width, dims.height, topBoundary, [0.5 + 100/dims.width, 1], 0.15, opts.mode);
+      const newNodes = makeNodes(1, opts.layerRange, dims.width, dims.height, topBoundary, opts.constructWindowPct, 0.15, opts.mode, opts);
       const newNode = newNodes[0];
       
       // Override the X position with our anti-clustered position
@@ -875,22 +942,136 @@
     }
   }
 
-  function initInnerBalloons(options) {
-    const opts = Object.assign({
+  // Type-specific configuration functions - each type has completely independent settings
+  function getType1Config(options) {
+    return Object.assign({
       containerSelector: '.inner-balloons',
       svgId: 'inner-balloons-svg',
-      mode: 'type2',
-      nodeCount: 8, // Max 8 balloons
-      layerRange: [8, 20], // 2x increase in max internal circle layers
+      mode: 'type1',
+      nodeCount: 11, // Increased by 3 balloons
+      layerRange: [8, 20],
       curvedExponent: 1.75,
-      introDurationMs: 6000, // 50% longer movement time
+      introDurationMs: 6000,
       constructWindowPct: [0.14, 0.86],
       transparency: [0.12, 0.35],
       keepDrift: false,
       backgroundImageUrl: undefined,
       primaryHue: 'auto',
-      clusterSize: 7
+      clusterSize: 7,
+      // Type 1 specific: colored balloons with sea-to-sunset palette
+      balloonColor: 'colored',
+      breathingEnabled: false,
+      sizeMultiplier: 0.8, // 20% smaller max size
+      minSizeMultiplier: 0.48 // 40% smaller min size
     }, options || {});
+  }
+
+  function getType2Config(options) {
+    return Object.assign({
+      containerSelector: '.inner-balloons',
+      svgId: 'inner-balloons-svg',
+      mode: 'type2',
+      nodeCount: 11, // Increased by 3 balloons
+      layerRange: [8, 20],
+      curvedExponent: 1.75,
+      introDurationMs: 6000,
+      constructWindowPct: [0.14, 0.86],
+      transparency: [0.084, 0.245], // 30% more transparent (0.12*0.7=0.084, 0.35*0.7=0.245)
+      keepDrift: false,
+      backgroundImageUrl: undefined,
+      primaryHue: 'auto',
+      clusterSize: 7,
+      // Type 2 specific: white transparent balloons
+      balloonColor: 'white',
+      breathingEnabled: false,
+      sizeMultiplier: 0.8, // 20% smaller max size
+      minSizeMultiplier: 0.48, // 40% smaller min size
+      // Type 3 lifecycle characteristics added to Type 2:
+      continuousCycling: true,
+      timeToLive: [45, 90]
+    }, options || {});
+  }
+
+  function getType3Config(options) {
+    return Object.assign({
+      containerSelector: '.inner-balloons',
+      svgId: 'inner-balloons-svg',
+      mode: 'type3',
+      nodeCount: 5, // 5 balloons
+      layerRange: [14, 24], // More layers for transparency effect
+      curvedExponent: 1.75,
+      introDurationMs: 6000,
+      constructWindowPct: [0.5, 0.95], // Right portion only
+      transparency: [0.12, 0.35],
+      keepDrift: false,
+      backgroundImageUrl: undefined,
+      primaryHue: 'auto',
+      clusterSize: 7,
+      // Type 3 specific: inverted transparency with continuous cycling
+      backgroundColor: '#ffffff',
+      bubbleOpacity: 0.8,
+      transparencySteps: 5,
+      blendMode: 'multiply',
+      balloonColor: 'transparent',
+      breathingEnabled: true,
+      sizeMultiplier: 1.0, // Original size
+      minSizeMultiplier: 0.8, // Original min size
+      continuousCycling: true,
+      timeToLive: [45, 90],
+      repulsiveForce: 0.125 // 25% stronger repulsive force
+    }, options || {});
+  }
+
+  function getType4Config(options) {
+    return Object.assign({
+      containerSelector: '.inner-balloons',
+      svgId: 'inner-balloons-svg',
+      mode: 'type4',
+      nodeCount: 8, // 8 balloons
+      layerRange: [8, 20],
+      curvedExponent: 1.75,
+      introDurationMs: 6000,
+      constructWindowPct: [0.14, 0.86],
+      transparency: [0.12, 0.35],
+      keepDrift: false,
+      backgroundImageUrl: undefined,
+      primaryHue: 'auto',
+      clusterSize: 7,
+      // Type 4 specific: one yellow balloon + white background
+      yellowColor: '#FFFF00',
+      whiteColor: '#FFFFFF',
+      centerPositioning: true,
+      maxSize: true,
+      upwardMovement: true,
+      frontRendering: true,
+      balloonColor: 'mixed',
+      breathingEnabled: true,
+      sizeMultiplier: 1.0, // Original size
+      minSizeMultiplier: 0.8 // Original min size
+    }, options || {});
+  }
+
+  function initInnerBalloons(options) {
+    // Get type-specific configuration
+    const mode = options?.mode || 'type2';
+    let opts;
+    
+    switch(mode) {
+      case 'type1':
+        opts = getType1Config(options);
+        break;
+      case 'type2':
+        opts = getType2Config(options);
+        break;
+      case 'type3':
+        opts = getType3Config(options);
+        break;
+      case 'type4':
+        opts = getType4Config(options);
+        break;
+      default:
+        opts = getType2Config(options);
+    }
 
     const dims = measure(opts.containerSelector);
     if (!dims.el) { console.warn('inner-balloons container not found:', opts.containerSelector); return; }
@@ -908,8 +1089,16 @@
       .attr('role', 'img').attr('aria-hidden', 'true').attr('focusable', 'false');
     svg.selectAll('*').remove();
 
-    const mode = (opts.mode === 'colored' || opts.mode === 'transparent') ? 'type2' : opts.mode;
-    if (mode === 'type1') type1Cluster(svg, dims, opts); else type2Swirl(svg, dims, opts);
+    // Route to appropriate animation function based on mode
+    if (opts.mode === 'type1') {
+      type1Cluster(svg, dims, opts);
+    } else if (opts.mode === 'type3') {
+      type2Swirl(svg, dims, opts); // Type 3 implementation is inside type2Swirl
+    } else if (opts.mode === 'type4') {
+      type2Swirl(svg, dims, opts); // Type 4 implementation is inside type2Swirl
+    } else {
+      type2Swirl(svg, dims, opts); // Default to type2Swirl for type2 and others
+    }
 
     if (window._innerBalloonsResizeHandler) window.removeEventListener('resize', window._innerBalloonsResizeHandler);
     window._innerBalloonsResizeHandler = () => { initInnerBalloons(opts); };

@@ -79,6 +79,15 @@
           svgId: 'inner-balloons-svg',
           introDurationMs: 3000
         });
+      } else if (which === 'type2') {
+        // Type 2: Transparent balloons with sea-to-sunset colors
+        initInnerBalloons({
+          mode: 'type2',
+          containerSelector: '.inner-balloons',
+          svgId: 'inner-balloons-svg',
+          nodeCount: 5, // 5 balloons
+          introDurationMs: 6000
+        });
       } else if (which === 'type3') {
         // Type 3: Inverted transparency with solid background and bubble "holes"
         initInnerBalloons({

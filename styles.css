@@ -572,6 +572,7 @@ body {
   position: relative;
   min-height: min(60vh, 680px);
   padding: clamp(2rem, 5vw, 4rem) clamp(0rem, 3.6vw, 2.7rem);
+  background-image: url('animations/test_balloon_background_pic.png');
   background-size: cover;
   background-position: center;
 }
