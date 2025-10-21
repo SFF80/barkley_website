@@ -356,29 +356,16 @@
             const baseRadius = circleData.layerSize;
             const layer = circleData.layer || 0;
             
-            if (opts.mode === 'type4') {
-              // Type 4: Simplified breathing - all circles in same balloon breathe at same rate
-              // Breathing rate is randomly assigned per balloon (2-3 seconds)
-              const breathingRate = d.breathingRate || 1; // Use balloon's assigned breathing rate
-              const breathingAmplitude = 0.01; // Max +/- 1% of radius
-              
-              const breathingTime = elapsed * 0.001 * breathingRate;
-              const breathingScale = 1 + (Math.sin(breathingTime) * breathingAmplitude);
-              const currentRadius = baseRadius * breathingScale;
-              
-              circle.attr('r', currentRadius);
-            } else {
-              // Type 3: Original complex breathing effect
-              const breathingRate = 0.8 + (layer * 0.1); // 0.8 to 1.8 seconds per breath cycle
-              const breathingAmplitude = 0.05 + (layer * 0.02); // 5% to 15% size variation
-              const breathingPhase = layer * 0.5; // Stagger the phases
-              
-              const breathingTime = elapsed * 0.001 * breathingRate + breathingPhase;
-              const breathingScale = 1 + (Math.sin(breathingTime) * breathingAmplitude);
-              const currentRadius = baseRadius * breathingScale;
-              
-              circle.attr('r', currentRadius);
-            }
+            // Type 3: Original complex breathing effect
+            const breathingRate = 0.8 + (layer * 0.1); // 0.8 to 1.8 seconds per breath cycle
+            const breathingAmplitude = 0.05 + (layer * 0.02); // 5% to 15% size variation
+            const breathingPhase = layer * 0.5; // Stagger the phases
+            
+            const breathingTime = elapsed * 0.001 * breathingRate + breathingPhase;
+            const breathingScale = 1 + (Math.sin(breathingTime) * breathingAmplitude);
+            const currentRadius = baseRadius * breathingScale;
+            
+            circle.attr('r', currentRadius);
           }
         });
       }
@@ -458,10 +445,8 @@
         n.color = colorPool[i % colorPool.length];
       } else if (opts.balloonColor === 'transparent') {
         n.color = 'transparent';
-      } else if (opts.balloonColor === 'mixed') {
-        // Type 4: first balloon is yellow, others are white
-        n.color = (i === 0) ? opts.yellowColor : opts.whiteColor;
       }
+      
       // Add velocity properties for transparent balloons
       const velocity = Math.random() * 1.0 + 0.5; // Random velocity between 0.5-1.5
       const angle = Math.random() * Math.PI * 2; // Random direction
@@ -476,35 +461,6 @@
       }
     });
     
-    // Type 4 specific post-processing: center positioning, max size, upward movement
-    if (opts.balloonColor === 'mixed') {
-      // Find the yellow balloon (first balloon)
-      const yellowBalloon = nodes[0];
-      
-      if (opts.centerPositioning) {
-        // Calculate cluster center
-        const centerX = nodes.reduce((sum, n) => sum + n.x, 0) / nodes.length;
-        const centerY = nodes.reduce((sum, n) => sum + n.y, 0) / nodes.length;
-        
-        // Position yellow balloon at cluster center
-        yellowBalloon.x = centerX;
-        yellowBalloon.y = centerY;
-        console.log(`Type 4: Yellow balloon positioned at cluster center (${centerX.toFixed(1)}, ${centerY.toFixed(1)})`);
-      }
-      
-      if (opts.maxSize) {
-        // Yellow balloon gets maximum size from all balloons
-        const maxSize = Math.max(...nodes.map(n => n.baseSize));
-        yellowBalloon.baseSize = maxSize;
-        console.log(`Type 4: Yellow balloon size set to maximum (${maxSize.toFixed(1)})`);
-      }
-      
-      if (opts.upwardMovement) {
-        // Yellow balloon moves upward (negative Y velocity)
-        yellowBalloon.vy = -Math.abs(yellowBalloon.vy);
-        console.log(`Type 4: Yellow balloon velocity set to upward (${yellowBalloon.vy.toFixed(2)})`);
-      }
-    }
 
     if (opts.mode === 'transparent' || opts.mode === 'type2') {
       svg.selectAll('*').remove();
@@ -674,58 +630,6 @@
       return;
     }
 
-    if (opts.mode === 'type4') {
-      // Type 4: Identical to Type 2 but with one balloon in yellow, all others white
-      const yellow = '#FFFF00'; // Yellow color
-      const white = '#FFFFFF'; // White color
-      
-      // Calculate center of balloon cluster
-      const centerX = nodes.reduce((sum, n) => sum + n.x, 0) / nodes.length;
-      const centerY = nodes.reduce((sum, n) => sum + n.y, 0) / nodes.length;
-      
-      nodes.forEach((n, i) => { 
-        // Assign random breathing rate to each balloon (2-3 seconds cycle)
-        n.breathingRate = 2 + Math.random(); // Random between 2-3 seconds
-        
-        if (i === 0) {
-          // Make the first balloon yellow, max size, position in center, and move upwards
-          n.color = yellow;
-          n.baseSize = Math.max(...nodes.map(node => node.baseSize)); // Max size
-          n.x = centerX; // Center position
-          n.y = centerY; // Center position
-          // Reverse vertical velocity to move upwards instead of downwards
-          n.vy = -Math.abs(n.vy); // Force upward movement
-        } else {
-          // All other balloons white
-          n.color = white; 
-        }
-      });
-      
-      const g = svg.append('g');
-      // Sort nodes so yellow balloon (index 0) is rendered last (on top)
-      const sortedNodes = [...nodes].sort((a, b) => {
-        if (a.color === yellow) return 1; // Yellow balloon goes last
-        if (b.color === yellow) return -1;
-        return 0;
-      });
-      const groups = sortedNodes.map(n => g.append('g').attr('transform', `translate(${n.x}, ${n.y})`));
-
-      const opacityFn = (layer, total) => clamp(0.24 + (0.48 - 0.08 * layer), 0.16, 0.64); // 20% more transparent (0.3*0.8=0.24, 0.6*0.8=0.48, 0.1*0.8=0.08, 0.2*0.8=0.16, 0.8*0.8=0.64)
-      const delays = { constructStep: 150, constructDuration: 720 };
-      groups.forEach((gr, idx) => appendLayers(gr, sortedNodes[idx], opts.curvedExponent, opacityFn, delays));
-
-      const state = {
-        groups, nodes: sortedNodes,
-        width: dims.width, height: dims.height,
-        introDurationMs: opts.introDurationMs,
-        keepDrift: !!opts.keepDrift,
-        frozen: false,
-        microDrift: false,
-        t0: performance.now()
-      };
-      requestAnimationFrame(() => animateRAF(state, opts));
-      return;
-    }
 
     // White type2
     nodes.forEach((n, i) => { n.color = 'white'; });
@@ -1022,34 +926,6 @@
     }, options || {});
   }
 
-  function getType4Config(options) {
-    return Object.assign({
-      containerSelector: '.inner-balloons',
-      svgId: 'inner-balloons-svg',
-      mode: 'type4',
-      nodeCount: 8, // 8 balloons
-      layerRange: [8, 20],
-      curvedExponent: 1.75,
-      introDurationMs: 6000,
-      constructWindowPct: [0.14, 0.86],
-      transparency: [0.12, 0.35],
-      keepDrift: false,
-      backgroundImageUrl: undefined,
-      primaryHue: 'auto',
-      clusterSize: 7,
-      // Type 4 specific: one yellow balloon + white background
-      yellowColor: '#FFFF00',
-      whiteColor: '#FFFFFF',
-      centerPositioning: true,
-      maxSize: true,
-      upwardMovement: true,
-      frontRendering: true,
-      balloonColor: 'mixed',
-      breathingEnabled: true,
-      sizeMultiplier: 1.0, // Original size
-      minSizeMultiplier: 0.8 // Original min size
-    }, options || {});
-  }
 
   function initInnerBalloons(options) {
     // Get type-specific configuration
@@ -1065,9 +941,6 @@
         break;
       case 'type3':
         opts = getType3Config(options);
-        break;
-      case 'type4':
-        opts = getType4Config(options);
         break;
       default:
         opts = getType2Config(options);
@@ -1094,8 +967,6 @@
       type1Cluster(svg, dims, opts);
     } else if (opts.mode === 'type3') {
       type2Swirl(svg, dims, opts); // Type 3 implementation is inside type2Swirl
-    } else if (opts.mode === 'type4') {
-      type2Swirl(svg, dims, opts); // Type 4 implementation is inside type2Swirl
     } else {
       type2Swirl(svg, dims, opts); // Default to type2Swirl for type2 and others
     }
