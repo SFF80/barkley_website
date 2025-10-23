@@ -127,11 +127,9 @@
       
       const fallSpeed = Math.random() * (maxFallSpeed - minFallSpeed) + minFallSpeed;
       
-      // Add horizontal force at inception
-      const horizontalForce = (Math.random() - 0.5) * 1.0; // -0.5 to 0.5 horizontal drift
-      
-      const vx = horizontalForce; // Horizontal drift
-      const vy = fallSpeed; // Downward fall speed
+      // Remove initial horizontal drift to avoid swooping in
+      const vx = 0; // No initial horizontal drift
+      const vy = fallSpeed * 0.2; // Downward fall speed reduced by 80%
       
       // Remove swirl trajectory properties - no more circular motion
       
@@ -215,7 +213,7 @@
     const elapsed = now - t0;
 
     // Zero gravity phase: 0-3 seconds, then slow down over 2 seconds
-    const zeroGravityEnd = 3000; // 3 seconds
+    const zeroGravityEnd = 500; // 3 seconds
     const slowDownDuration = 2000; // 2 seconds
     const slowDownEnd = zeroGravityEnd + slowDownDuration;
     
@@ -269,32 +267,15 @@
         }
       });
       
-      // Orbital mechanics: Single large gravitational body below center
-      const centerBodyX = width * 0.5; // Center horizontally
-      const centerBodyY = height * 1.2; // Below the visible area (20% below bottom)
-      const gravityStrength = 1.0; // Very high gravity for strong attraction
+      // NO orbital mechanics - balloons just drift down from top
+      // Removed: orbital gravity that created swirl effect during materialization
       
-      // Calculate force from the large gravitational body below
-      const centerDx = centerBodyX - d.x;
-      const centerDy = centerBodyY - d.y;
-      const centerDistance = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
-      
-      let totalGravityForceX = 0;
-      let totalGravityForceY = 0;
-      
-      if (centerDistance > 0) {
-        const centerForce = (gravityStrength * d.gravityFactor) / (centerDistance * centerDistance); // Inverse square law with balloon gravity factor
-        totalGravityForceX = (centerDx / centerDistance) * centerForce;
-        totalGravityForceY = (centerDy / centerDistance) * centerForce;
-      }
-      
-        // Remove swirl trajectory - no more circular motion
-      
-      // Apply movement using velocity vectors with speed multiplier, repulsive forces, and orbital gravity
+      // Apply movement using velocity vectors with speed multiplier and repulsive forces only
+      // NO gravity forces - balloons simply drift down with their initial velocity
       const oldX = d.x;
       const oldY = d.y;
-      d.x += (d.vx * speedMultiplier) + repulsiveForceX + totalGravityForceX;
-      d.y += (d.vy * speedMultiplier) + repulsiveForceY + totalGravityForceY;
+      d.x += (d.vx * speedMultiplier) + repulsiveForceX;
+      d.y += (d.vy * speedMultiplier) + repulsiveForceY;
       
       // Boundary bouncing to keep balloons in right portion (center + 100px)
       const rightBoundary = width * 0.5 + 100; // Left boundary: center + 100px
@@ -436,7 +417,7 @@
     const windowPct = opts.constructWindowPct || [0.14, 0.86];
     const nodes = makeNodes(opts.nodeCount, opts.layerRange, dims.width, dims.height, yAnchor, windowPct, 0.15, opts.mode, opts);
     
-    // Add velocity properties and set colors based on type configuration
+    // Set colors only; no random initial velocity override for Type 2
     nodes.forEach((n, i) => { 
       // Set color based on type-specific configuration
       if (opts.balloonColor === 'white') {
@@ -447,18 +428,8 @@
         n.color = 'transparent';
       }
       
-      // Add velocity properties for transparent balloons
-      const velocity = Math.random() * 1.0 + 0.5; // Random velocity between 0.5-1.5
-      const angle = Math.random() * Math.PI * 2; // Random direction
-      n.vx = Math.cos(angle) * velocity;
-      n.vy = Math.sin(angle) * velocity;
-      n.velocity = velocity;
-      n.angle = angle;
-      
-      // Debug logging for first few balloons
-      if (i < 3) {
-        console.log(`Transparent balloon ${i}: velocity=${velocity.toFixed(2)}, angle=${angle.toFixed(2)}, vx=${n.vx.toFixed(2)}, vy=${n.vy.toFixed(2)}`);
-      }
+      // Ensure no initial horizontal velocity override (avoid swoop)
+      n.vx = 0;
     });
     
 
@@ -790,8 +761,8 @@
       // Small horizontal drift
       const horizontalDrift = (Math.random() - 0.5) * 0.5; // -0.25 to 0.25
       
-      newNode.vx = horizontalDrift; // Small horizontal movement
-      newNode.vy = fallSpeed; // Downward fall speed (increased by 30%)
+      newNode.vx = 0; // No initial horizontal movement on respawn
+      newNode.vy = fallSpeed * 0.2; // Downward fall speed reduced by 80%
       newNode.velocity = fallSpeed;
       newNode.angle = Math.PI / 2; // Downward direction
       newNode.gravityFactor = newNode.baseSize / 50; // Gravity factor proportional to radius
@@ -852,7 +823,7 @@
       containerSelector: '.inner-balloons',
       svgId: 'inner-balloons-svg',
       mode: 'type1',
-      nodeCount: 11, // Increased by 3 balloons
+      nodeCount: 5, // Increased by 3 balloons
       layerRange: [8, 20],
       curvedExponent: 1.75,
       introDurationMs: 6000,
@@ -866,7 +837,7 @@
       balloonColor: 'colored',
       breathingEnabled: false,
       sizeMultiplier: 0.8, // 20% smaller max size
-      minSizeMultiplier: 0.48 // 40% smaller min size
+      minSizeMultiplier: 0.2 // 40% smaller min size
     }, options || {});
   }
 
@@ -875,10 +846,10 @@
       containerSelector: '.inner-balloons',
       svgId: 'inner-balloons-svg',
       mode: 'type2',
-      nodeCount: 11, // Increased by 3 balloons
+      nodeCount: 6, // Increased by 3 balloons
       layerRange: [8, 20],
       curvedExponent: 1.75,
-      introDurationMs: 6000,
+      introDurationMs: 4000,
       constructWindowPct: [0.14, 0.86],
       transparency: [0.084, 0.245], // 30% more transparent (0.12*0.7=0.084, 0.35*0.7=0.245)
       keepDrift: false,
@@ -892,7 +863,7 @@
       minSizeMultiplier: 0.336, // 30% smaller min size (0.48 * 0.7 = 0.336)
       // Type 3 lifecycle characteristics added to Type 2:
       continuousCycling: true,
-      timeToLive: [45, 90]
+      timeToLive: [30, 60]
     }, options || {});
   }
 
@@ -901,7 +872,7 @@
       containerSelector: '.inner-balloons',
       svgId: 'inner-balloons-svg',
       mode: 'type3',
-      nodeCount: 5, // 5 balloons
+      nodeCount: 8, // 5 balloons
       layerRange: [14, 24], // More layers for transparency effect
       curvedExponent: 1.75,
       introDurationMs: 6000,
@@ -921,8 +892,8 @@
       sizeMultiplier: 1.0, // Original size
       minSizeMultiplier: 0.8, // Original min size
       continuousCycling: true,
-      timeToLive: [45, 90],
-      repulsiveForce: 0.125 // 25% stronger repulsive force
+      timeToLive: [30, 60],
+      repulsiveForce: 0.5 // 25% stronger repulsive force
     }, options || {});
   }
 
