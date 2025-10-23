@@ -1,6 +1,7 @@
 // Animation Manager - Easy switching between different animations
 import { KnowledgeGraphAnimation } from './knowledge-graph.js';
 import { initHeroCircles } from './hero-circles.js';
+import { initType2Balloons } from './type2-balloons.js';
 
 export class AnimationManager {
     constructor() {
@@ -17,6 +18,24 @@ export class AnimationManager {
           // Default containerSelector assumes the same structure as index.html
           const containerSelector = this.options.containerSelector || '.knowledge-graph';
           this.ctrl = initHeroCircles(Object.assign({
+            svgId: this.containerId,
+            containerSelector
+          }, this.options));
+        }
+        pause() { this.ctrl?.pause?.(); }
+        resume() { this.ctrl?.resume?.(); }
+        destroy() { this.ctrl?.destroy?.(); this.ctrl = null; }
+      }
+      ,
+      'type2-balloons': class Type2BalloonsAnimation {
+        constructor(containerId, options = {}) {
+          this.containerId = containerId;
+          this.options = options;
+          this.ctrl = null;
+        }
+        init() {
+          const containerSelector = this.options.containerSelector || '.knowledge-graph';
+          this.ctrl = initType2Balloons(Object.assign({
             svgId: this.containerId,
             containerSelector
           }, this.options));

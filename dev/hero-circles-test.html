@@ -3,31 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
   <title>Hero Circles Test</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../styles.css" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
-    /* Ensure the test canvas is visible and full-screen */
     .knowledge-graph { position: fixed; inset: 0; z-index: 1; }
     .hero-container { position: relative; z-index: 2; }
-    /* If you prefer a non-fixed layout, use the below instead:
-       .knowledge-graph { width: 100vw; height: 100vh; }
-    */
   </style>
 </head>
 <body>
   <div class="page-wrapper">
     <div class="knowledge-graph"><svg id="graph-svg"></svg></div>
-    <!-- Hero text removed for reusable animation test -->
   </div>
 
   <script type="module">
-    import { initHeroCircles } from './animations/hero-circles.js';
-    // Run the duplicated, reusable animation module
+    import { initHeroCircles } from '../animations/hero-circles.js';
     initHeroCircles({ svgId: 'graph-svg', containerSelector: '.knowledge-graph' });
   </script>
 </body>
-<!-- This page intentionally does not load script.js to avoid conflicts. -->
 </html>
 
 

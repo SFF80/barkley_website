@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex" />
+    <title>Barkley — Hero Circles (Dev)</title>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="knowledge-graph">
+            <svg id="graph-svg"></svg>
+        </div>
+        <div id="hero-container" class="hero-container">
+            <div class="hero-text">
+                <span class="letter" data-letter="b">b</span>
+                <span class="letter" data-letter="a">a</span>
+                <span class="letter" data-letter="r">r</span>
+                <span class="letter" data-letter="k">k</span>
+                <span class="letter" data-letter="l">l</span>
+                <span class="letter" data-letter="e">e</span>
+                <span class="letter" data-letter="y">y</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="main-content">
+        <!-- trimmed main content for brevity; same layout structure as root page -->
+        <main class="main">
+            <section class="data-section">
+                <h2>KNOWLEDGE</h2>
+                <div class="data-columns">
+                    <div class="data-column left-column"><p>Dev harness.</p></div>
+                    <div class="data-column right-column"><p>This capability is <strong>Barkley</strong>.</p></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module">
+      import { initHeroCircles } from '../animations/hero-circles.js';
+      const ctrl = initHeroCircles({ svgId: 'graph-svg', containerSelector: '.knowledge-graph', anchorSelector: '.hero-text' });
+      requestAnimationFrame(() => ctrl?.reanchor?.());
+      if (ctrl?.enhancedColor) {
+        const knowledgeTitle = document.querySelector('.data-section h2');
+        if (knowledgeTitle) knowledgeTitle.style.color = ctrl.enhancedColor;
+        const barkleyStrong = document.querySelector('.data-column.right-column strong');
+        if (barkleyStrong) barkleyStrong.style.color = ctrl.enhancedColor;
+      }
+    </script>
+</body>
+</html>
+
+

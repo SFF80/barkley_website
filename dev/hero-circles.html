@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Dev • Hero Circles</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .knowledge-graph { position: fixed; inset: 0; z-index: 1; }
+    .hero-container { position: relative; z-index: 2; }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="knowledge-graph"><svg id="graph-svg"></svg></div>
+  </div>
+
+  <script type="module">
+    import { initHeroCircles } from '../animations/hero-circles.js';
+    // No hero text; anchor to container center via module fallback
+    initHeroCircles({ svgId: 'graph-svg', containerSelector: '.knowledge-graph' });
+  </script>
+</body>
+</html>
+
+

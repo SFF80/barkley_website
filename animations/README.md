@@ -7,6 +7,7 @@ This directory contains modular animation components for the Barkley website.
 - `animation-manager.js` - Main manager for switching between animations
 - `knowledge-graph.js` - D3.js knowledge graph animation
 - `hero-circles.js` - Reusable carousel "balloon" circles animation
+- `type2-balloons.js` - Reusable falling layered balloons (top spawn, drift down)
 - `README.md` - This documentation
 
 ## Usage
@@ -73,6 +74,28 @@ type HeroCirclesOptions = {
 
 - `knowledge-graph` - D3.js force-directed graph with sea-to-sunset colors
 - `hero-circles` - Carousel balloons/circles with layered construction and gentle vertical float
+- `type2-balloons` - Top-spawn layered balloons drifting down (transparent white with light grey stroke)
+
+### Using the Type 2 Balloons Animation
+
+Direct module use:
+
+```html
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script type="module">
+  import { initType2Balloons } from './animations/type2-balloons.js';
+  initType2Balloons({ svgId: 'graph-svg', containerSelector: '.knowledge-graph' });
+  // returns { pause, resume, destroy }
+</script>
+```
+
+Via the Animation Manager:
+
+```javascript
+import { AnimationManager } from './animations/animation-manager.js';
+const mgr = new AnimationManager();
+mgr.initAnimation('type2-balloons', 'graph-svg', { containerSelector: '.knowledge-graph' });
+```
 
 ### Animation Manager Methods
 

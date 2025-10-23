@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Type 2 Balloons Test</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .knowledge-graph { position: fixed; inset: 0; z-index: 1; }
+  </style>
+</head>
+<body>
+  <div class="knowledge-graph"><svg id="graph-svg"></svg></div>
+  <script type="module">
+    import { initType2Balloons } from '../animations/type2-balloons.js';
+    initType2Balloons({ svgId: 'graph-svg', containerSelector: '.knowledge-graph' });
+  </script>
+</body>
+</html>
+
+

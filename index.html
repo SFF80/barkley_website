@@ -107,6 +107,106 @@
         </section>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+      (function () {
+        function hasHeroCirclesParam() {
+          try {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('hero') === 'circles';
+          } catch (_) { return false; }
+        }
+
+        // Classic path: load golden source synchronously during parse
+        function loadGolden() {
+          try {
+            document.write('\u003Cscript src="script.js"\u003E\u003C/script\u003E');
+          } catch (_) {
+            // Fallback in case document.write is blocked
+            var s = document.createElement('script');
+            s.src = 'script.js';
+            s.defer = true;
+            document.head.appendChild(s);
+          }
+        }
+
+        if (!hasHeroCirclesParam()) {
+          loadGolden();
+          return;
+        }
+
+        // Opt-in path: dynamically import reusable animation module
+        // Requires D3 to already be loaded globally (as in <head>)
+        import('./animations/hero-circles.js')
+          .then(mod => {
+            const ctrl = mod.initHeroCircles({
+              svgId: 'graph-svg',
+              containerSelector: '.knowledge-graph',
+              anchorSelector: '.hero-text'
+            });
+
+            // Apply enhanced color to KNOWLEDGE and bold Barkley (parity with golden source)
+            if (ctrl && ctrl.enhancedColor) {
+              const knowledgeTitle = document.querySelector('.data-section h2');
+              if (knowledgeTitle) knowledgeTitle.style.color = ctrl.enhancedColor;
+              const barkleyStrong = document.querySelector('.data-column.right-column strong');
+              if (barkleyStrong) barkleyStrong.style.color = ctrl.enhancedColor;
+            }
+
+            // Reveal main content similarly to golden script
+            var main = document.getElementById('main-content');
+            if (main) main.classList.remove('hidden');
+
+            // Hero text color alternation once per carousel cycle (approximate parity)
+            (function setupHeroCycle(){
+              const svgEl = document.getElementById('graph-svg');
+              const containerEl = document.querySelector('.knowledge-graph');
+              if (!svgEl) return;
+              const getCycleWidth = () => {
+                const cw = containerEl && containerEl.clientWidth || 0;
+                if (cw > 0) return cw;
+                const sw = svgEl.getBoundingClientRect().width || 0;
+                return sw || window.innerWidth;
+              };
+              const width = getCycleWidth(); // compute once
+              const baseCarouselSpeed = 0.2625;
+              const totalDistance = width + 200 + 150;
+              const cycleTimeMs = (totalDistance / baseCarouselSpeed) * 16.67 * 0.6;
+              let lastHeroCycle = 0;
+              let heroAnimationTime = 0;
+              function tick(){
+                heroAnimationTime += 16.67;
+                const currentCycle = Math.floor(heroAnimationTime / cycleTimeMs);
+                if (currentCycle > lastHeroCycle) {
+                  lastHeroCycle = currentCycle;
+                  const letters = document.querySelectorAll('.letter');
+                  if (lastHeroCycle % 2 === 0) {
+                    letters.forEach(letter => {
+                      letter.style.transition = 'color 1.5s ease-out';
+                      letter.style.color = '#ffffff';
+                      letter.style.animation = 'none';
+                    });
+                  } else {
+                    const map = { b:'#87CEEB', a:'#4682B4', r:'#1E90FF', k:'#000080', l:'#DC143C', e:'#FF4500', y:'#FF8C00' };
+                    letters.forEach(letter => {
+                      const key = letter.getAttribute('data-letter');
+                      const color = map[key];
+                      if (color) {
+                        letter.style.transition = 'color 1.5s ease-out';
+                        letter.style.color = color;
+                      }
+                    });
+                  }
+                }
+                window.requestAnimationFrame(tick);
+              }
+              window.requestAnimationFrame(tick);
+            })();
+          })
+          .catch(err => {
+            console.error('Falling back to golden source due to error loading hero-circles:', err);
+            loadGolden();
+          });
+      })();
+    </script>
 </body>
 </html>
