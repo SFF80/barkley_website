@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barkley — Hero Circles (Dev)</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Knowledge Graph/Circles Background -->
+        <div class="knowledge-graph">
+            <svg id="graph-svg"></svg>
+        </div>
+
+        <!-- Hero Text (kept for layout comparison) -->
+        <div id="hero-container" class="hero-container">
+            <div class="hero-text">
+                <span class="letter" data-letter="b">b</span>
+                <span class="letter" data-letter="a">a</span>
+                <span class="letter" data-letter="r">r</span>
+                <span class="letter" data-letter="k">k</span>
+                <span class="letter" data-letter="l">l</span>
+                <span class="letter" data-letter="e">e</span>
+                <span class="letter" data-letter="y">y</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (same as index for fair visual test) -->
+    <div id="main-content" class="main-content">
+        <header class="header">
+            <nav class="nav">
+                    <ul class="nav-links">
+                        <li><a href="about.html">Sectors</a></li>
+                        <li><a href="services.html">Capabilities</a></li>
+                        <li><a href="portfolio.html">Platform</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="blog.html">Social</a></li>
+                    </ul>
+            </nav>
+        </header>
+
+        <main class="main">
+            <section class="data-section">
+                <h2>KNOWLEDGE</h2>
+                <div class="data-columns">
+                    <div class="data-column left-column">
+                        <p>Data is exhaust. Knowledge is leverage.</p>
+                        <p>Barkley enables organisations to continousouly map, navigate, predict and react to knowledge as it evolves.</p>
+                        <p>Domain-fluent AIs work beside our Forward-Deployed Engineers to surface, structure, and use knowledge at scale — converting operational noise into compound efficiency.</p>
+                    </div>
+                    <div class="data-column right-column">
+                        <p>As domains evolve, the system learns and adapts in real time — wiring insight directly into process, compliance, and decision.</p>
+                        <p>The result: knowledge that executes, decisions that move faster, cost less, and stay aligned.</p>
+                        <p>Replace bureaucracy with intelligence, and pull efficiency forward by orders of magnitude. This capability is <strong>Barkley</strong>.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <section class="grey-nav-section">
+            <div class="grey-nav-container">
+                <div class="data-columns">
+                    <div class="data-column left-column">
+                        <h3>Capabilities</h3>
+                        <div class="capabilities-links">
+                            <a href="#">Data Processing Platform</a>
+                            <a href="#">AI & Machine Learning</a>
+                            <a href="#">FDE</a>
+                            <a href="#">Domain Fluency</a>
+                            <a href="#">Knowledge Management</a>
+                            <a href="#">Process Automation</a>
+                        </div>
+                    </div>
+                    <div class="data-column right-column"></div>
+                </div>
+
+                <div class="data-columns">
+                    <div class="data-column left-column">
+                        <div class="site-map-section">
+                            <h3>Site Map</h3>
+                            <div class="site-map-links">
+                                <a href="about.html">Sectors</a>
+                                <a href="services.html">Capabilities</a>
+                                <a href="portfolio.html">Platform</a>
+                                <a href="contact.html">Contact</a>
+                                <a href="blog.html">Social</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-column right-column">
+                        <div class="disclaimer-section">
+                            <p>Copyright 2025 Barkley. All rights reserved.</p>
+                            <p><a href="#">Terms of Use</a> | <a href="#">Privacy & Cookies</a></p>
+                            <p><a href="#">Intellectual Property Guidelines</a> | <a href="#">UK Modern Slavery Act</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Dev: use reusable animation, do not load script.js -->
+    <script type="module">
+      import { initHeroCircles } from './animations/hero-circles.js';
+      // Anchor to hero text for like-for-like comparison
+      const ctrl = initHeroCircles({ svgId: 'graph-svg', containerSelector: '.knowledge-graph', anchorSelector: '.hero-text' });
+      // Ensure initial reanchor after CSS/layout settles
+      requestAnimationFrame(() => ctrl?.reanchor?.());
+      // Apply enhanced color to the Knowledge H2 and right-column bold Barkley (parity with golden source)
+      if (ctrl?.enhancedColor) {
+        const knowledgeTitle = document.querySelector('.data-section h2');
+        if (knowledgeTitle) knowledgeTitle.style.color = ctrl.enhancedColor;
+        const barkleyStrong = document.querySelector('.data-column.right-column strong');
+        if (barkleyStrong) barkleyStrong.style.color = ctrl.enhancedColor;
+      }
+      // Show main content as in the original flow
+      document.getElementById('main-content')?.classList.remove('hidden');
+
+      // Hero text color alternation parity with golden source
+      // Compute cycle once based on approximate travel time (mirrors script.js logic)
+      (function setupHeroCycle(){
+        const svgEl = document.getElementById('graph-svg');
+        const containerEl = document.querySelector('.knowledge-graph');
+        if (!svgEl) return;
+        // Use container clientWidth as primary with robust fallbacks
+        const getCycleWidth = () => {
+          const cw = containerEl?.clientWidth || 0;
+          if (cw > 0) return cw;
+          const sw = svgEl.getBoundingClientRect().width || 0;
+          return sw || window.innerWidth;
+        };
+        const width = getCycleWidth(); // calculated once; we do NOT recalc on resize
+        const baseCarouselSpeed = 0.2625; // same default as module
+        const totalDistance = width + 200 + 150; // width + off-screen + avg size
+        const cycleTimeMs = (totalDistance / baseCarouselSpeed) * 16.67 * 0.6; // ≈ golden source
+        let lastHeroCycle = 0;
+        let heroAnimationTime = 0;
+        function tick(ts){
+          heroAnimationTime += 16.67;
+          const currentCycle = Math.floor(heroAnimationTime / cycleTimeMs);
+          if (currentCycle > lastHeroCycle) {
+            lastHeroCycle = currentCycle;
+            const letters = document.querySelectorAll('.letter');
+            if (lastHeroCycle % 2 === 0) {
+              letters.forEach(letter => {
+                letter.style.transition = 'color 1.5s ease-out';
+                letter.style.color = '#ffffff';
+                letter.style.animation = 'none';
+              });
+            } else {
+              const map = { b:'#87CEEB', a:'#4682B4', r:'#1E90FF', k:'#000080', l:'#DC143C', e:'#FF4500', y:'#FF8C00' };
+              letters.forEach(letter => {
+                const key = letter.getAttribute('data-letter');
+                const color = map[key];
+                if (color) {
+                  letter.style.transition = 'color 1.5s ease-out';
+                  letter.style.color = color;
+                }
+              });
+            }
+          }
+          requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      })();
+    </script>
+</body>
+</html>
+
+

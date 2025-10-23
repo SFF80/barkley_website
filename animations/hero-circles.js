@@ -54,6 +54,7 @@ export function initHeroCircles(options = {}) {
   const nodes = d3.range(opts.nodeCount).map(i => {
     const baseSize = Math.random() * 89.23 + 44.62;
     const layers = Math.floor(Math.random() * 7) + 4; // 4-10
+    const randomOffsetY = (Math.random() - 0.5) * 60;
     return {
       id: i,
       group: Math.floor(i / 5),
@@ -61,7 +62,8 @@ export function initHeroCircles(options = {}) {
       baseSize,
       layers,
       x: Math.random() * (width + 200) - 100,
-      y: anchorY + (Math.random() - 0.5) * 60,
+      y: anchorY + randomOffsetY,
+      anchorOffsetY: randomOffsetY,
       animationSpeed: Math.random() * 0.08 + 0.04,
       animationOffset: Math.random() * Math.PI * 2,
       verticalSpeed: Math.random() * 0.024 + 0.012,
@@ -129,8 +131,11 @@ export function initHeroCircles(options = {}) {
       }
       if (d.x > width + 200) {
         d.x = -100 - Math.random() * 50;
-        const newY = getAnchorY() + (Math.random() - 0.5) * 60;
+        const newAnchorY = getAnchorY();
+        const newOffset = (Math.random() - 0.5) * 60;
+        const newY = newAnchorY + newOffset;
         d.y = newY;
+        d.anchorOffsetY = newOffset;
         d.isDeconstructing = false;
       }
       g.attr('transform', `translate(${d.x}, ${currentY})`);
@@ -149,12 +154,20 @@ export function initHeroCircles(options = {}) {
     width = container.node().clientWidth || window.innerWidth;
     height = container.node().clientHeight || window.innerHeight;
     svg.attr('width', width).attr('height', height);
+    // Re-anchor nodes to maintain relative vertical offsets
+    const ay = getAnchorY();
+    nodes.forEach(d => { d.y = ay + (d.anchorOffsetY || 0); });
   }
 
   window.addEventListener('resize', onResize);
   rafId = requestAnimationFrame(animate);
 
   return {
+    enhancedColor,
+    reanchor(){
+      const ay = getAnchorY();
+      nodes.forEach(d => { d.y = ay + (d.anchorOffsetY || 0); });
+    },
     pause(){ if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } },
     resume(){ if (!rafId) rafId = requestAnimationFrame(animate); },
     destroy(){

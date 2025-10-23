@@ -6,6 +6,7 @@ This directory contains modular animation components for the Barkley website.
 
 - `animation-manager.js` - Main manager for switching between animations
 - `knowledge-graph.js` - D3.js knowledge graph animation
+- `hero-circles.js` - Reusable carousel "balloon" circles animation
 - `README.md` - This documentation
 
 ## Usage
@@ -19,9 +20,59 @@ const animationManager = new AnimationManager();
 animationManager.initAnimation('knowledge-graph', 'graph-svg');
 ```
 
+### Using the Hero Circles Animation (Reusable)
+
+Direct module use (without the manager):
+
+```html
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script type="module">
+  import { initHeroCircles } from './animations/hero-circles.js';
+  initHeroCircles({
+    svgId: 'graph-svg',
+    containerSelector: '.knowledge-graph',
+    // Optional anchoring controls:
+    // anchorY: 300,                      // fixed vertical anchor (container coords)
+    // anchorSelector: '.some-element',   // compute vertical center from element
+    nodeCount: 40,
+    baseCarouselSpeed: 0.2625,
+    speedVariance: 0.4
+  });
+  // The function returns { pause, resume, destroy }
+  // e.g., const ctrl = initHeroCircles(...); ctrl.destroy();
+</script>
+```
+
+Via the Animation Manager:
+
+```javascript
+import { AnimationManager } from './animations/animation-manager.js';
+const mgr = new AnimationManager();
+mgr.initAnimation('hero-circles', 'graph-svg', {
+  containerSelector: '.knowledge-graph',
+  // anchorY: 300,
+  // anchorSelector: '.some-element'
+});
+```
+
+#### Hero Circles Options
+
+```ts
+type HeroCirclesOptions = {
+  svgId: string;                 // required
+  containerSelector: string;     // required
+  anchorY?: number;              // optional explicit vertical anchor
+  anchorSelector?: string;       // optional element to derive vertical center
+  nodeCount?: number;            // default 40
+  baseCarouselSpeed?: number;    // default 0.2625
+  speedVariance?: number;        // default 0.4
+};
+```
+
 ### Available Animations
 
 - `knowledge-graph` - D3.js force-directed graph with sea-to-sunset colors
+- `hero-circles` - Carousel balloons/circles with layered construction and gentle vertical float
 
 ### Animation Manager Methods
 
