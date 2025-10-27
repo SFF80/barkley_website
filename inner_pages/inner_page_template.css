@@ -1,0 +1,8 @@
+/* Inner page isolated overrides. Scoped via .inner-page to avoid affecting landing page. */
+.inner-page .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 clamp(0rem, 4vw, 3rem); position: relative; }
+.inner-page .knowledge-graph { left: auto; right: 0; width: 50%; }
+.inner-page .hero-container { left: auto; right: 0; width: 50%; }
+
+/* Example place for future inner-page-only tweaks without touching landing page */
+.inner-page .data-section h2 { /* currently inherits global styles */ }
+

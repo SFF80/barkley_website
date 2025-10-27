@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barkley – Inner Page Template</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="./inner_page_template.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="inner-page">
+    <div class="page-wrapper">
+        <div class="knowledge-graph">
+            <svg id="graph-svg"></svg>
+        </div>
+
+        <!-- No hero text for inner pages; keep container for consistent height and anchoring -->
+        <div id="hero-container" class="hero-container"></div>
+    </div>
+
+    <div id="main-content" class="main-content hidden">
+        <header class="header">
+            <nav class="nav">
+                <div class="nav-brand" aria-label="barkley">
+                    <span class="nav-letter b">b</span>
+                    <span class="nav-letter a">a</span>
+                    <span class="nav-letter r">r</span>
+                    <span class="nav-letter k">k</span>
+                    <span class="nav-letter l">l</span>
+                    <span class="nav-letter e">e</span>
+                    <span class="nav-letter y">y</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="../about.html">Sectors</a></li>
+                    <li><a href="../services.html">Capabilities</a></li>
+                    <li><a href="../portfolio.html">Platform</a></li>
+                    <li><a href="../contact.html">Contact</a></li>
+                    <li><a href="../blog.html">Social</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="main">
+            <!-- Inner page content goes here -->
+            <section class="data-section">
+                <h2>KNOWLEDGE</h2>
+                <div class="data-columns">
+                    <div class="data-column left-column">
+                        <p>Data is exhaust. Knowledge is leverage.</p>
+                        <p>Barkley enables organisations to continuously map, navigate, predict and react to knowledge as it evolves.</p>
+                        <p>Domain-fluent AIs work beside our Forward-Deployed Engineers to surface, structure, and use knowledge at scale — converting operational noise into compound efficiency.</p>
+                    </div>
+                    <div class="data-column right-column">
+                        <p>As domains evolve, the system learns and adapts in real time — wiring insight directly into process, compliance, and decision.</p>
+                        <p>The result: knowledge that executes, decisions that move faster, cost less, and stay aligned.</p>
+                        <p>Replace bureaucracy with intelligence, and pull efficiency forward by orders of magnitude. This capability is <strong>Barkley</strong><span class="blink-dot">.</span></p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <section class="grey-nav-section">
+            <div class="grey-nav-container">
+                <div class="data-columns">
+                    <div class="data-column left-column">
+                        <h3>Capabilities</h3>
+                        <div class="capabilities-links">
+                            <a href="#">Data Processing Platform</a>
+                            <a href="#">AI & Machine Learning</a>
+                            <a href="#">FDE</a>
+                            <a href="#">Domain Fluency</a>
+                            <a href="#">Knowledge Management</a>
+                            <a href="#">Process Automation</a>
+                        </div>
+                    </div>
+                    <div class="data-column right-column"></div>
+                </div>
+                <div class="data-columns">
+                    <div class="data-column left-column">
+                        <div class="site-map-section">
+                            <h3>Site Map</h3>
+                            <div class="site-map-links">
+                                <a href="../about.html">Sectors</a>
+                                <a href="../services.html">Capabilities</a>
+                                <a href="../portfolio.html">Platform</a>
+                                <a href="../contact.html">Contact</a>
+                                <a href="../blog.html">Social</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-column right-column">
+                        <div class="disclaimer-section">
+                            <p>Copyright 2025 Barkley. All rights reserved.</p>
+                            <p><a href="#">Terms of Use</a> | <a href="#">Privacy & Cookies</a></p>
+                            <p><a href="#">Intellectual Property Guidelines</a> | <a href="#">UK Modern Slavery Act</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+      (function () {
+        function loadGolden() {
+          try {
+            document.write('\u003Cscript src="./inner_page_template.js"\u003E\u003C/script\u003E');
+          } catch (_) {
+            var s = document.createElement('script');
+            s.src = './inner_page_template.js';
+            s.defer = true;
+            document.head.appendChild(s);
+          }
+        }
+        loadGolden();
+      })();
+    </script>
+</body>
+</html>
+

@@ -29,7 +29,8 @@ h1, h2, h3 {
     position: absolute; /* Changed from fixed to absolute */
     top: 0vh; /* Remove top gap completely */
     left: 0;
-    width: 100%; /* Relative to page-wrapper */
+    right: 0; /* ensure it respects the page-wrapper's horizontal padding/margins */
+    width: auto; /* stretch between left/right insets */
     height: 75vh; /* Further reduced height to minimize bottom gap */
     background-color: transparent;
     display: flex;
@@ -45,7 +46,8 @@ h1, h2, h3 {
     position: absolute; /* Changed from fixed to absolute */
     top: 0vh; /* Match hero container top position */
     left: 0;
-    width: 100%; /* Relative to page-wrapper */
+    right: 0; /* ensure it respects the page-wrapper's horizontal padding/margins */
+    width: auto; /* stretch between left/right insets */
     height: 75vh; /* Match hero container height */
     z-index: 5; /* Animation behind hero text */
     pointer-events: none;
