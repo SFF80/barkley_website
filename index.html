@@ -58,7 +58,7 @@
                     <div class="data-column right-column">
                         <p>As domains evolve, the system learns and adapts in real time — wiring insight directly into process, compliance, and decision.</p>
                         <p>The result: knowledge that executes, decisions that move faster, cost less, and stay aligned.</p>
-                        <p>Replace bureaucracy with intelligence, and pull efficiency forward by orders of magnitude. This capability is <strong>Barkley</strong>.</p>
+                        <p>Replace bureaucracy with intelligence, and pull efficiency forward by orders of magnitude. This capability is <strong>Barkley</strong><span class="blink-dot">.</span></p>
                     </div>
                 </div>
             </section>
@@ -153,6 +153,10 @@
               if (knowledgeTitle) knowledgeTitle.style.color = ctrl.enhancedColor;
               const barkleyStrong = document.querySelector('.data-column.right-column strong');
               if (barkleyStrong) barkleyStrong.style.color = ctrl.enhancedColor;
+              const blinkDot = document.querySelector('.blink-dot');
+              if (blinkDot) {
+                blinkDot.style.color = (barkleyStrong && getComputedStyle(barkleyStrong).color) || ctrl.enhancedColor || '';
+              }
             }
 
             // Reveal main content similarly to golden script
@@ -209,6 +213,26 @@
             console.error('Falling back to golden source due to error loading hero-circles:', err);
             loadGolden();
           });
+      })();
+      // Keep the blinking dot color in sync with the preceding Barkley strong element (golden path and future updates)
+      (function syncBlinkDotColor(){
+        function apply(){
+          var s = document.querySelector('.data-column.right-column strong');
+          var d = document.querySelector('.blink-dot');
+          if (s && d) {
+            d.style.color = getComputedStyle(s).color;
+          }
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', apply);
+        } else {
+          apply();
+        }
+        var target = document.querySelector('.data-column.right-column');
+        if (target && typeof MutationObserver !== 'undefined') {
+          var mo = new MutationObserver(apply);
+          mo.observe(target, { attributes: true, subtree: true, attributeFilter: ['style','class'] });
+        }
       })();
     </script>
 </body>

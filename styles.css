@@ -6,9 +6,14 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Montserrat', Arial, sans-serif;
     background-color: #ffffff;
     overflow-x: hidden;
+}
+
+/* Global heading font family */
+h1, h2, h3 {
+    font-family: 'Montserrat', Arial, sans-serif;
 }
 
 /* Page Wrapper for central column effect */
@@ -342,6 +347,18 @@ body {
         margin: 0 auto; /* Center the data section within the main-content's flow */
     }
 
+/* Subtle blink for final period after Barkley */
+.blink-dot {
+    display: inline-block;
+    animation: blinkFade 2.8s ease-in-out infinite;
+}
+
+@keyframes blinkFade {
+    0%, 20% { opacity: 0; }
+    30%, 70% { opacity: 1; }
+    80%, 100% { opacity: 0; }
+}
+
 .data-section h2 {
     font-size: 2.5rem;
     font-weight: 300;
@@ -375,7 +392,7 @@ body {
     line-height: 1.6;
     color: #666;
     margin-bottom: 1.5rem;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Montserrat', Arial, sans-serif;
 }
 
 /* Responsive Hero Text Scaling */
@@ -440,7 +457,7 @@ body {
     font-weight: 600;
     color: #333;
     margin-bottom: 1.5rem;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Montserrat', Arial, sans-serif;
 }
 
 .nav-list {
@@ -509,7 +526,7 @@ body {
     font-weight: 600;
     color: #333;
     margin-bottom: 1.5rem;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Montserrat', Arial, sans-serif;
 }
 
 .site-map-links {
@@ -600,7 +617,7 @@ body {
 }
 
 .inner-hero-content h1 {
-  font-family: Arial, sans-serif;
+  font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 300;
   font-size: clamp(2.2rem, 6vw, 4rem);
   margin: 0 0 1rem 0;
