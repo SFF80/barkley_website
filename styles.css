@@ -59,9 +59,9 @@ body {
 
 .hero-text {
     font-size: clamp(4rem, 12vw, 13.5rem); /* Responsive scaling: min 4rem, preferred 12vw, max 13.5rem */
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: -0.104em;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Montserrat', Arial, sans-serif;
     text-transform: lowercase;
     white-space: nowrap;
     position: relative;
@@ -71,7 +71,7 @@ body {
 .letter {
     color: #ffffff;
     display: inline-block;
-    font-weight: 300;
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -207,6 +207,7 @@ body {
 .nav-links a {
     text-decoration: none;
     color: #666;
+    font-family: 'Montserrat', Arial, sans-serif;
     font-weight: 500;
     transition: color 0.3s ease;
 }

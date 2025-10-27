@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Dev • HUMINT Geospatial</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .geo-canvas { position: fixed; inset: 0; z-index: 1; background: #000; }
+  </style>
+</head>
+<body>
+  <div class="geo-canvas"><svg id="geo-svg"></svg></div>
+
+  <script type="module">
+    import { initGeoHumint } from './geo-humint.js';
+    initGeoHumint({ svgId: 'geo-svg', containerSelector: '.geo-canvas' });
+  </script>
+</body>
+</html>
+
+
+

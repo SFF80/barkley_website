@@ -52,6 +52,10 @@
 - Document exact requirements before changes
 - Test each change individually
 
+### **Operational Safety Notes:**
+- Source folder for this project: `cd "/Users/user/Desktop/Barkley/src/barkley-website"`
+- NEVER EVER execute violent or destructive terminal commands (e.g., `rm -rf *`). If explicitly instructed by the user, require explicit confirmation and the exact source folder string above before proceeding.
+
 ## 📋 CURRENT WORKING STATE (DO NOT BREAK)
 
 - **Hero text**: White, visible, never fades out, Arial font, weight 300, size 13.5rem
@@ -105,7 +109,7 @@
 - Knowledge H2: `KNOWLEDGE`
 - Knowledge left column (3 paragraphs):
   1. `Data is exhaust. Knowledge is leverage.`
-  2. `Barkley enables organisations to continousouly map, navigate, predict and react to knowledge as it evolves.`
+  2. `Barkley enables organisations to continuously map, navigate, predict and react to knowledge as it evolves.`
   3. `Domain-fluent AIs work beside our Forward-Deployed Engineers to surface, structure, and use knowledge at scale — converting operational noise into compound efficiency.`
 - Knowledge right column (3 paragraphs):
   1. `As domains evolve, the system learns and adapts in real time — wiring insight directly into process, compliance, and decision.`
