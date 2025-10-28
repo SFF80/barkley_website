@@ -216,6 +216,9 @@ h1, h2, h3 {
 .nav-letter.e { color: #FF4500; }      /* orange red */
 .nav-letter.y { color: #FF8C00; }      /* dark orange */
 
+/* Inline logo coloring inside body copy should not appear bold */
+.data-column.right-column strong.logo-colored { font-weight: 400; }
+
 .nav-links {
     display: flex;
     list-style: none;

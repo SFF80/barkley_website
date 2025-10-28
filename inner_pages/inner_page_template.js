@@ -41,6 +41,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const barkleyText = document.querySelector('.data-column.right-column strong');
         if (barkleyText) barkleyText.style.color = enhancedColor;
 
+        // Match nav active link color to the section color (inner pages only)
+        (function colorActiveNav(){
+            let activeLink = document.querySelector('.nav-links a.active');
+            if (!activeLink) {
+                const current = (location.pathname || '').split('/').pop();
+                document.querySelectorAll('.nav-links a').forEach(a => {
+                    const href = a.getAttribute('href') || '';
+                    if (href.endsWith(current)) activeLink = a;
+                });
+            }
+            if (activeLink) activeLink.style.color = enhancedColor;
+        })();
+
         // Anchor balloons vertically to the centerline of the hero container (no hero text on inner pages)
         const heroContainerRect = document.querySelector('.hero-container').getBoundingClientRect();
         const knowledgeGraphRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
