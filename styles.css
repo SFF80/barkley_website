@@ -478,9 +478,7 @@ h1, h2, h3 {
         padding: 0 clamp(0rem, 3.6vw, 2.7rem) 0 clamp(2.0625rem, calc(3.6vw + 2.0625rem), 5.0625rem); /* Extra 33px left padding - adjusted for 1210px width */
     }
 
-    /* Make Capabilities row span full width within container by removing the empty right column */
-    .grey-nav-container > .data-columns:first-child .data-column.right-column { display: none; }
-    .grey-nav-container > .data-columns:first-child .data-column.left-column { flex: 1 1 100%; }
+    /* Removed special-case first row rule now that Capabilities moved out of footer */
 
 .nav-columns {
     display: flex;
@@ -606,6 +604,31 @@ h1, h2, h3 {
     .disclaimer-section a:hover {
         color: #666;
     }
+
+/* Resources section (align with inner pages) */
+.resources-section h3 {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+}
+.resources-section.data-section {
+    /* Match left padding used by Site Map container for perfect alignment */
+    padding-left: clamp(2.0625rem, calc(3.6vw + 2.0625rem), 5.0625rem);
+}
+.resources-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.resources-links a {
+    font-weight: 400;
+    text-decoration: underline;
+    text-decoration-color: #CFCFCF;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    color: #333;
+}
 
 /* Responsive Design for Grey Navigation */
 @media (max-width: 768px) {

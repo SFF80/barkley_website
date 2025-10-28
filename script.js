@@ -95,6 +95,11 @@ function initD3Circles() {
         if (barkleyText) {
             barkleyText.style.color = enhancedColor;
         }
+        // Assign the same enhanced color to Resources title if present
+        const resourcesTitle = document.querySelector('.resources-section h3');
+        if (resourcesTitle) {
+            resourcesTitle.style.color = enhancedColor;
+        }
     
     // Get the actual Hero text position to anchor circles properly
     const heroText = document.querySelector('.hero-text');
