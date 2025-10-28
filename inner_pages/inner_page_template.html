@@ -6,7 +6,7 @@
     <title>Barkley – Inner Page Template</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="./inner_page_template.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -19,6 +19,14 @@
 
         <!-- No hero text for inner pages; keep container for consistent height and anchoring -->
         <div id="hero-container" class="hero-container"></div>
+
+        <!-- Right column page_scope copy beneath balloons -->
+        <div class="hero-scope">
+            <div class="hero-scope-inner">
+                <p>As domains evolve, the system learns and adapts in real time — wiring insight directly into process, compliance, and decision.</p>
+                <p>The result: knowledge that executes, decisions that move faster, cost less, and stay aligned.</p>
+            </div>
+        </div>
 
         <!-- Left hero copy column (replica of Knowledge section) -->
         <div class="hero-copy">
@@ -55,7 +63,8 @@
 
         <main class="main">
             <!-- Inner page content goes here -->
-            <section class="data-section">
+            <!-- Section 3: page_detail -->
+            <section class="page-detail data-section">
                 <h2>KNOWLEDGE</h2>
                 <div class="data-columns">
                     <div class="data-column left-column">
@@ -64,13 +73,23 @@
                         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua nunc vitae massa.</p>
                     </div>
                     <div class="data-column right-column">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua nunc.</p>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do tempor ut labore nunc.</p>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor ut labore et nunc.</p>
+                        <div class="media-block">
+                            <div class="media-figure placeholder-video" aria-label="placeholder media"></div>
+                        </div>
                     </div>
                 </div>
             </section>
         </main>
+
+        <!-- Section 3: section_relevant_resources -->
+        <section class="resources-section data-section">
+            <h3>Resources</h3>
+            <div class="resources-links">
+                <a href="#">Whitepaper: Knowledge Graphs in Operations</a>
+                <a href="#">Case Study: Real-time Compliance</a>
+                <a href="#">Guide: Deploying FDE Teams</a>
+            </div>
+        </section>
 
         <section class="grey-nav-section">
             <div class="grey-nav-container">

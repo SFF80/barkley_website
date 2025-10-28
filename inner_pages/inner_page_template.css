@@ -1,3 +1,28 @@
+.inner-page .resources-section {
+  /* Match footer's asymmetric padding: right standard, left +33px */
+  padding: 2rem clamp(0rem, 3.6vw, 2.7rem) 2rem clamp(2.0625rem, calc(3.6vw + 2.0625rem), 5.0625rem);
+}
+.inner-page .resources-section h3 {
+  font-size: 1.6rem; /* match Section 3 title size */
+  font-weight: 300;   /* match Section 3 title weight */
+  letter-spacing: 0.1em; /* match Section 3 letter spacing */
+  margin-bottom: 1rem;
+  color: var(--enhanced-color);
+}
+.inner-page .resources-links { display: flex; flex-wrap: wrap; gap: 1rem 2rem; }
+.inner-page .resources-links a { color: #333; text-decoration: none; font-size: 1rem; font-weight: 700; }
+.inner-page .resources-links a:hover { color: #666; }
+
+/* Align footer (section 5) left padding with resources (section 4) */
+.inner-page .grey-nav-container { padding-left: clamp(2.0625rem, calc(3.6vw + 2.0625rem), 5.0625rem) !important; }
+.inner-page .page-detail { padding-top: 8rem; padding-bottom: 8rem; }
+.inner-page .page-detail .media-block { display: block; }
+.inner-page .page-detail .placeholder-video {
+  width: 100%;
+  aspect-ratio: 8 / 9; /* roughly 2x the height of 16:9 at same width */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+}
 /* Inner page isolated overrides. Scoped via .inner-page to avoid affecting landing page. */
 .inner-page .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 clamp(0rem, 4vw, 3rem); position: relative; }
 .inner-page .knowledge-graph { left: auto; right: 0; width: 70%; }
@@ -26,6 +51,7 @@
   font-weight: 300; /* match data-section h2 weight */
   letter-spacing: 0.1em; /* match data-section h2 */
   margin-bottom: 1rem;
+  color: var(--enhanced-color);
 }
 .inner-page .hero-copy p {
   font-size: 1.1rem; /* match data-section p */
@@ -34,9 +60,27 @@
 }
 
 /* Reduce the size of the lower section title (inner pages only) */
-.inner-page .data-section h2 { font-size: 1.6rem; }
+.inner-page .data-section h2 { font-size: 1.6rem; color: var(--enhanced-color); }
 /* Reduce body line-height across inner page content by 20% */
 .inner-page .data-section p { line-height: 1.28; }
+
+/* Right column page_scope text positioned in hero band under balloons */
+.inner-page .hero-scope {
+  position: absolute;
+  top: calc(75vh - 6rem); /* place immediately below mid-band for short copy */
+  right: 0;
+  width: 70%;
+  pointer-events: none;
+}
+.inner-page .hero-scope-inner {
+  pointer-events: auto;
+  padding-right: clamp(0rem, 3.6vw, 2.7rem);
+  color: #666;
+  display: flex;
+  justify-content: flex-end;
+  gap: 2rem;
+}
+.inner-page .hero-scope-inner p { max-width: 36ch; line-height: 1.28; }
 
 /* Example place for future inner-page-only tweaks without touching landing page */
 .inner-page .data-section h2 { /* currently inherits global styles */ }

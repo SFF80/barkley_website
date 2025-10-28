@@ -32,8 +32,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const knowledgeTitle = document.querySelector('.data-section h2');
         if (knowledgeTitle) knowledgeTitle.style.color = enhancedColor;
+        // Expose enhanced color to CSS variables so multiple titles match exactly
+        document.documentElement.style.setProperty('--enhanced-color', enhancedColor);
         const heroCopyTitle = document.querySelector('.hero-copy h2');
         if (heroCopyTitle) heroCopyTitle.style.color = enhancedColor;
+        const resourcesTitle = document.querySelector('.resources-section h3');
+        if (resourcesTitle) resourcesTitle.style.color = enhancedColor;
         const barkleyText = document.querySelector('.data-column.right-column strong');
         if (barkleyText) barkleyText.style.color = enhancedColor;
 
