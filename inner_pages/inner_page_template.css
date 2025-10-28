@@ -6,3 +6,18 @@
 /* Example place for future inner-page-only tweaks without touching landing page */
 .inner-page .data-section h2 { /* currently inherits global styles */ }
 
+/* Disable any fade/transition for inner pages so everything loads at once */
+.inner-page .main-content { opacity: 1 !important; transition: none !important; }
+.inner-page .main-content.hidden { opacity: 1 !important; }
+.inner-page section, .inner-page header, .inner-page .header, .inner-page .nav, .inner-page .data-section, .inner-page .grey-nav-section { transition: none !important; }
+
+/* Hold everything invisible until we have drawn first frame, then reveal instantly */
+.preload .page-wrapper,
+.preload .header,
+.preload .main-content,
+.preload .grey-nav-section { visibility: hidden; }
+.preload-done .page-wrapper,
+.preload-done .header,
+.preload-done .main-content,
+.preload-done .grey-nav-section { visibility: visible; }
+

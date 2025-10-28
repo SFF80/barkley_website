@@ -6,16 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize D3 circles animation (identical behavior)
     initD3Circles();
 
-    // Start hero animation sequence
-    startHeroAnimation();
+    // Inner pages: reveal immediately, no fade timing
+    if (mainContent) mainContent.classList.remove('hidden');
 
-    function startHeroAnimation() {
-        setTimeout(() => { showMainContent(); }, 2500);
-    }
-
-    function showMainContent() {
-        if (mainContent) mainContent.classList.remove('hidden');
-    }
+    // Flip body from preload -> preload-done on first animation frame so everything appears at once
+    requestAnimationFrame(() => {
+        document.body.classList.remove('preload');
+        document.body.classList.add('preload-done');
+    });
 
     // Minimal copy of the D3 animation from script.js with the same interfaces
     function initD3Circles() {
@@ -56,7 +54,9 @@ document.addEventListener('DOMContentLoaded', function() {
             verticalSpeed: Math.random() * 0.024 + 0.012,
             verticalOffset: Math.random() * Math.PI * 2,
             verticalAmplitude: Math.random() * 36 + 31.2,
-            horizontalSpeed: baseCarouselSpeed + (Math.random() - 0.5) * speedVariance
+            horizontalSpeed: baseCarouselSpeed + (Math.random() - 0.5) * speedVariance,
+            // Approximate maximum outer radius, including breathing scale
+            maxRadius: (Math.random() * 89.23 + 44.62) * 0.8 * 1.3 // fallback; refined below per-group
         }));
 
         nodes.sort((a, b) => a.x - b.x);
@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         balloonGroups.each(function(d){
             const group = d3.select(this);
             const maxLayer = d.layers - 1;
+            let computedMax = 0;
             for (let layer = 0; layer < d.layers; layer++) {
                 const normalizedLayer = layer / (d.layers - 1);
                 const curvedGrowth = Math.pow(normalizedLayer, 1.75);
@@ -74,7 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const constructionDelay = distanceFromEdge * 150;
                 const deconstructionDelay = layer * 150;
                 group.append('circle').attr('r', layerSize).attr('fill', d.color).attr('opacity', 0).datum({ ...d, layer, layerSize, layerOpacity, constructionDelay, deconstructionDelay, isConstructed:false, isDeconstructing:false });
+                if (layerSize > computedMax) computedMax = layerSize;
             }
+            // store a conservative max radius including breathing scale (1.3x)
+            d.maxRadius = Math.max(d.maxRadius || 0, computedMax * 1.3);
         });
 
         let carouselTime = 0; let initialLoadComplete = false; let heroAnimationTime = 0; let lastHeroCycle = 0;
@@ -82,13 +86,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function animate(){
             carouselTime += 0.016; heroAnimationTime += 16.67;
+            const LEFT_BOUNDARY = 0;
+            const RIGHT_BOUNDARY = width;
+            const FADE_LEAD = 40; // px lead so opacity is near 0 at boundary
             balloonGroups.each(function(d){
                 const group = d3.select(this);
                 d.x += d.horizontalSpeed;
                 const verticalTime = carouselTime * d.verticalSpeed + d.verticalOffset;
                 const verticalFloat = Math.sin(verticalTime) * d.verticalAmplitude;
                 const currentY = d.y + verticalFloat;
-                if (d.x > width * 0.8 + 100 && !d.isDeconstructing) {
+                // Start deconstruction before the outer edge reaches the right boundary
+                if ((d.x + (d.maxRadius||0)) >= (RIGHT_BOUNDARY - FADE_LEAD) && !d.isDeconstructing) {
                     d.isDeconstructing = true;
                     group.selectAll('circle').transition().delay(ld=>ld.deconstructionDelay).duration(600).attr('opacity',0).on('end', ld=>{ ld.isConstructed=false; });
                 }
@@ -100,19 +108,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     d.y = relY + (Math.random()-0.5)*60;
                     d.isDeconstructing=false; d.isConstructed=false;
                 }
-                const shouldConstruct = (!initialLoadComplete && d.x > width*0.1 && d.x < width*0.8 && !d.isConstructed && !d.isDeconstructing) || (initialLoadComplete && d.x > width*0.1 && d.x < width*0.1+100 && !d.isConstructed && !d.isDeconstructing);
+                // Construct only when the full balloon is inside the visible boundaries
+                const fullyInside = (d.x - (d.maxRadius||0)) >= (LEFT_BOUNDARY + FADE_LEAD) && (d.x + (d.maxRadius||0)) <= (RIGHT_BOUNDARY - FADE_LEAD);
+                const constructGateLeft = LEFT_BOUNDARY + (d.maxRadius||0) + FADE_LEAD;
+                const shouldConstruct = (!initialLoadComplete && fullyInside && !d.isConstructed && !d.isDeconstructing) || (initialLoadComplete && d.x > constructGateLeft && d.x < constructGateLeft + 100 && !d.isConstructed && !d.isDeconstructing);
                 if (shouldConstruct) {
                     d.isConstructed = true;
                     group.selectAll('circle').each(function(ld, li){ d3.select(this).transition().delay(ld.constructionDelay||0).duration(720).attr('opacity', Math.max(0.1, ld.layerOpacity||0.3)).on('end', ()=>{ ld.isConstructed=true; }); });
                 }
                 group.attr('transform', `translate(${d.x}, ${currentY})`);
                 group.selectAll('circle').each(function(ld){
-                    const time = carouselTime * d.animationSpeed + d.animationOffset; // no undefined layerDelay
+                    const time = carouselTime * d.animationSpeed + d.animationOffset;
                     const scale = 1 + Math.sin(time) * 0.3;
                     const opacity = ld.layerOpacity * (0.8 + Math.sin(time * 0.7) * 0.2);
                     const newRadius = ld.layerSize * scale;
                     if (!isNaN(newRadius) && newRadius > 0) {
-                        d3.select(this).attr('r', newRadius).attr('opacity', Math.max(0, Math.min(1, opacity)));
+                        d3.select(this).attr('r', newRadius);
+                    }
+                    // Only show breathing opacity for layers that have been constructed
+                    if (ld.isConstructed) {
+                        d3.select(this).attr('opacity', Math.max(0, Math.min(1, opacity)));
+                    } else {
+                        d3.select(this).attr('opacity', 0);
                     }
                 });
             });
