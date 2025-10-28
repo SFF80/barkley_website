@@ -141,11 +141,11 @@
   /* Extend overlay to the right boundary so balloons never appear to the right of the text */
   .inner-page .hero-copy::after {
     content: '';
-    position: absolute; top: 0; bottom: 0;
+    position: absolute; top: 0; height: 50vh; bottom: auto;
     left: calc(-1 * clamp(0rem, 4vw, 3rem));
-    width: 100vw; background: rgba(255,255,255,0.5); border-radius: 8px; z-index: 1;
+    width: 100vw; background: rgba(255,255,255,0.5); border-radius: 8px; z-index: 1; /* under text */
   }
-  .inner-page .hero-copy-inner { background: transparent; }
+  .inner-page .hero-copy-inner { background: transparent; position: relative; z-index: 2; }
 }
 
 /* Very small screens: overlap Section 2 columns, put text above balloons */
@@ -160,7 +160,7 @@
   .inner-page .hero-copy::after {
     content: '';
     position: absolute;
-    top: 0; bottom: 0;
+    top: 0; height: 55vh; bottom: auto;
     left: calc(-1 * clamp(0rem, 4vw, 3rem)); /* extend over left page padding */
     width: 100vw; /* blanket to viewport right edge */
     background: rgba(255,255,255,0.5);
@@ -171,6 +171,7 @@
   .inner-page #graph-svg { transform: none; } /* ensure JS coordinates match visuals on small screens */
   .inner-page .hero-copy-inner {
     background: transparent; /* overlay handled by ::after for full-width alignment */
+    position: relative; z-index: 2; /* text above overlay */
     border-radius: 8px;
     padding: 1rem 1.25rem;
     width: 100%;
