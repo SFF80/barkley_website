@@ -57,12 +57,22 @@
 
 /* Reduce the size of data-section titles (inner pages only) */
 .inner-page .data-section h2 { font-size: 1.6rem; color: var(--enhanced-color); }
-@media (min-width: 1280px) {
-  /* Page-detail becomes a 2-row, 2-column grid: title aligns with media top */
-  .inner-page .page-detail { display: grid; grid-template-columns: 1.1fr 1fr; grid-template-areas: "title media" "body media"; column-gap: 2.5rem; align-items: start; }
+@media (min-width: 769px) {
+  /* Non-small screens: reverse columns (media left, text right) and align title with media top */
+  .inner-page .page-detail {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    grid-template-areas: "media title" "media body";
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+  .inner-page .page-detail .detail-media { grid-area: media; }
   .inner-page .page-detail h2 { grid-area: title; font-size: 1.35rem; line-height: 1.1; margin-top: 0; margin-bottom: 0.25rem; align-self: start; }
   .inner-page .page-detail .detail-body { grid-area: body; }
-  .inner-page .page-detail .detail-media { grid-area: media; }
+}
+
+@media (min-width: 1280px) {
+  /* On very large screens, keep ratio for media */
   .inner-page .page-detail .detail-media .placeholder-video { aspect-ratio: 16 / 9; }
 }
 /* Reduce body line-height across inner page content by 20% */
