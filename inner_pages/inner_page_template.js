@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function initD3Circles() {
         const svg = d3.select('#graph-svg');
         const knowledgeGraphContainer = d3.select('.knowledge-graph');
-        const width = knowledgeGraphContainer.node().clientWidth;
+        const width = knowledgeGraphContainer.node().clientWidth; // reflects 70% width via CSS
         const height = knowledgeGraphContainer.node().clientHeight;
         const baseCarouselSpeed = 0.2625;
         const speedVariance = 0.4;
@@ -86,8 +86,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function animate(){
             carouselTime += 0.016; heroAnimationTime += 16.67;
-            const LEFT_BOUNDARY = 0;
-            const RIGHT_BOUNDARY = width;
+            const LEFT_BOUNDARY = 0; // left edge of the inner-page animation band
+            const RIGHT_BOUNDARY = width; // right edge (container width already 70% of page)
             const FADE_LEAD = 40; // px lead so opacity is near 0 at boundary
             balloonGroups.each(function(d){
                 const group = d3.select(this);
