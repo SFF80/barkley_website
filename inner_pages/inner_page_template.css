@@ -131,6 +131,38 @@
   .inner-page .hero-container { height: 42vh; }
 }
 
+/* Very small screens: overlap Section 2 columns, put text above balloons */
+@media (max-width: 600px) {
+  .inner-page .page-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas: "stack";
+    padding-top: 5.5rem; /* ensure title clears fixed nav on very small screens */
+  }
+  .inner-page .hero-copy { grid-area: stack; position: relative; z-index: 3; }
+  /* Full-viewport overlay behind text to cover balloons to the right */
+  .inner-page .hero-copy::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc(-1 * clamp(0rem, 4vw, 3rem)); /* extend over left page padding */
+    width: 100vw; /* blanket to viewport right edge */
+    background: rgba(255,255,255,0.5);
+    border-radius: 8px;
+    z-index: 2; /* sits behind text but above balloons */
+  }
+  .inner-page .knowledge-graph, .inner-page .hero-container {
+    grid-area: stack; position: relative; z-index: 1; height: 50vh; pointer-events: none; overflow: hidden;
+  }
+  .inner-page #graph-svg { transform: none; } /* ensure JS coordinates match visuals on small screens */
+  .inner-page .hero-copy-inner {
+    background: transparent; /* overlay handled by ::after for full-width alignment */
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    width: 100%;
+    box-shadow: none; /* remove drop shadow */
+  }
+}
+
 /* Make grid layout active for wide screens too (unify behavior) */
 @media (min-width: 1280px) {
   .inner-page .page-wrapper {
