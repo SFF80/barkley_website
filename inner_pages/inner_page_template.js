@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const knowledgeGraphRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
         const heroTextRelativeY = (heroContainerRect.top + heroContainerRect.bottom) / 2 - knowledgeGraphRect.top;
 
-        // Responsive density and sizing
+        // Responsive density and sizing (Section 2 only)
         const containerW = width;
         let nodeCount = 40;
         if (containerW < 1200) nodeCount = 30;
@@ -100,10 +100,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function animate(){
             carouselTime += 0.016; heroAnimationTime += 16.67;
-            const GUTTER = 24; // keep balloons off text gutter
+            const GUTTER = 12; // keep balloons off text gutter (aligned to Section 2 padding)
             const LEFT_BOUNDARY = 0 + GUTTER;
             const RIGHT_BOUNDARY = width - GUTTER;
-            const FADE_LEAD = 40; // px lead so opacity is near 0 at boundary
+            const FADE_LEAD = 8; // deconstruction begins very close to the right boundary
+            const CONSTRUCT_SHIFT = Math.max(12, (RIGHT_BOUNDARY - LEFT_BOUNDARY) * 0.02); // move materialisation window rightwards
+            const CONSTRUCT_WINDOW = Math.max(60, (RIGHT_BOUNDARY - LEFT_BOUNDARY) * 0.04); // narrower, proportional window
             balloonGroups.each(function(d){
                 const group = d3.select(this);
                 d.x += d.horizontalSpeed;
@@ -123,10 +125,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     d.y = relY + (Math.random()-0.5)*60;
                     d.isDeconstructing=false; d.isConstructed=false;
                 }
-                // Construct only when the full balloon is inside the visible boundaries
-                const fullyInside = (d.x - (d.maxRadius||0)) >= (LEFT_BOUNDARY + FADE_LEAD) && (d.x + (d.maxRadius||0)) <= (RIGHT_BOUNDARY - FADE_LEAD);
-                const constructGateLeft = LEFT_BOUNDARY + (d.maxRadius||0) + FADE_LEAD;
-                const shouldConstruct = (!initialLoadComplete && fullyInside && !d.isConstructed && !d.isDeconstructing) || (initialLoadComplete && d.x > constructGateLeft && d.x < constructGateLeft + 100 && !d.isConstructed && !d.isDeconstructing);
+                // Construct only when the balloon center has moved sufficiently into the band (shifted right), with a smaller window
+                const constructGateLeft = LEFT_BOUNDARY + (d.maxRadius||0) + FADE_LEAD + CONSTRUCT_SHIFT;
+                const shouldConstructWindowRight = constructGateLeft + CONSTRUCT_WINDOW;
+                const shouldConstruct = (
+                    d.x > constructGateLeft && d.x < shouldConstructWindowRight && !d.isConstructed && !d.isDeconstructing
+                );
                 if (shouldConstruct) {
                     d.isConstructed = true;
                     group.selectAll('circle').each(function(ld, li){ d3.select(this).transition().delay(ld.constructionDelay||0).duration(720).attr('opacity', Math.max(0.1, ld.layerOpacity||0.3)).on('end', ()=>{ ld.isConstructed=true; }); });

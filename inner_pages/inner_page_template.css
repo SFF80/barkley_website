@@ -24,7 +24,7 @@
   border-radius: 8px;
 }
 /* Inner page isolated overrides. Scoped via .inner-page to avoid affecting landing page. */
-.inner-page .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 clamp(0rem, 4vw, 3rem); padding-top: 3.75rem; position: relative; display: grid; grid-template-columns: 48% 52%; column-gap: 24px; grid-template-areas: "copy balloons"; align-items: start; }
+.inner-page .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 clamp(0rem, 4vw, 3rem); padding-right: calc(2rem + clamp(0rem, 3.6vw, 2.7rem)); padding-top: 3.75rem; position: relative; display: grid; grid-template-columns: 48% 52%; column-gap: 24px; grid-template-areas: "copy balloons"; align-items: start; }
 .inner-page .knowledge-graph { grid-area: balloons; left: auto; right: auto; width: 100%; margin-left: -24px; }
 .inner-page .hero-container { grid-area: balloons; left: auto; right: auto; width: 100%; margin-left: -24px; }
 /* Increase balloons visual width by ~50% from the right edge */
