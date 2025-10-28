@@ -15,7 +15,7 @@
 
 /* Align footer (section 5) left padding with resources (section 4) */
 .inner-page .grey-nav-container { padding-left: clamp(2.0625rem, calc(3.6vw + 2.0625rem), 5.0625rem) !important; }
-.inner-page .page-detail { padding-top: 8rem; padding-bottom: 8rem; }
+.inner-page .page-detail { padding-top: 2rem; padding-bottom: 4rem; }
 .inner-page .page-detail .media-block { display: block; }
 .inner-page .page-detail .placeholder-video {
   width: 100%;
@@ -24,25 +24,20 @@
   border-radius: 8px;
 }
 /* Inner page isolated overrides. Scoped via .inner-page to avoid affecting landing page. */
-.inner-page .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 clamp(0rem, 4vw, 3rem); position: relative; }
-.inner-page .knowledge-graph { left: auto; right: 0; width: 70%; }
-.inner-page .hero-container { left: auto; right: 0; width: 70%; }
+.inner-page .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 clamp(0rem, 4vw, 3rem); padding-top: 3.75rem; position: relative; display: grid; grid-template-columns: 48% 52%; column-gap: 24px; grid-template-areas: "copy balloons"; align-items: start; }
+.inner-page .knowledge-graph { grid-area: balloons; left: auto; right: auto; width: 100%; margin-left: -24px; }
+.inner-page .hero-container { grid-area: balloons; left: auto; right: auto; width: 100%; margin-left: -24px; }
+/* Increase balloons visual width by ~50% from the right edge */
+.inner-page #graph-svg { transform: scale(1.5); transform-origin: 100% 50%; overflow: visible; }
+.inner-page .knowledge-graph { overflow: visible; }
 
 /* Left hero copy column overlayed in hero band */
-.inner-page .hero-copy {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 30%;
-  height: 75vh;
-  display: flex;
-  align-items: center;
-  pointer-events: none; /* do not block balloons */
-}
+.inner-page .hero-copy { grid-area: copy; position: relative; width: 100%; height: auto; display: block; pointer-events: auto; }
 .inner-page .hero-copy-inner {
   pointer-events: auto;
-  /* match main's 2rem left padding + data-section's clamp left padding */
-  padding-left: calc(2rem + clamp(0rem, 3.6vw, 2.7rem));
+  /* Align with Section 3 total inset: main 2rem + data-section clamp,
+     compensating for page-wrapper's own left padding */
+  padding-left: calc(2rem + clamp(0rem, 3.6vw, 2.7rem) - clamp(0rem, 4vw, 3rem));
   padding-right: clamp(0rem, 3.6vw, 2.7rem);
   color: #666; /* match body text color below */
 }
@@ -64,29 +59,13 @@
 /* Reduce body line-height across inner page content by 20% */
 .inner-page .data-section p { line-height: 1.28; }
 
-/* Right column page_scope text positioned in hero band under balloons */
-.inner-page .hero-scope {
-  position: absolute;
-  top: calc(75vh - 6rem); /* place immediately below mid-band for short copy */
-  right: 0;
-  width: 70%;
-  pointer-events: none;
-}
-.inner-page .hero-scope-inner {
-  pointer-events: auto;
-  padding-right: clamp(0rem, 3.6vw, 2.7rem);
-  color: #666;
-  display: flex;
-  justify-content: flex-end;
-  gap: 2rem;
-}
-.inner-page .hero-scope-inner p { max-width: 36ch; line-height: 1.28; }
+/* (hero-scope removed) */
 
 /* Example place for future inner-page-only tweaks without touching landing page */
 .inner-page .data-section h2 { /* currently inherits global styles */ }
 
 /* Disable any fade/transition for inner pages so everything loads at once */
-.inner-page .main-content { opacity: 1 !important; transition: none !important; }
+.inner-page .main-content { opacity: 1 !important; transition: none !important; padding-top: 0 !important; }
 .inner-page .main-content.hidden { opacity: 1 !important; }
 .inner-page section, .inner-page header, .inner-page .header, .inner-page .nav, .inner-page .data-section, .inner-page .grey-nav-section { transition: none !important; }
 
@@ -99,4 +78,79 @@
 .preload-done .header,
 .preload-done .main-content,
 .preload-done .grey-nav-section { visibility: visible; }
+
+/* ---------- Responsive coordination for Section 2 (inner pages only) ---------- */
+@media (max-width: 1279px) {
+  /* Turn the hero band into a true two-column grid with a safety gutter */
+  .inner-page .page-wrapper {
+    display: grid;
+    grid-template-columns: 45% 55%;
+    column-gap: 24px;
+    grid-template-areas:
+      "copy balloons";
+    align-items: start;
+  }
+
+  .inner-page .hero-copy {
+    position: static; /* stop absolute overlay */
+    width: 100%;
+    height: auto;
+    grid-area: copy;
+    z-index: 10;
+    pointer-events: auto;
+  }
+
+  .inner-page .knowledge-graph,
+  .inner-page .hero-container {
+    position: relative; /* live inside grid cell */
+    left: auto; right: auto; width: 100%;
+    height: clamp(260px, 42vh, 520px);
+    grid-area: balloons;
+    margin-left: -24px;
+  }
+
+  .inner-page .hero-scope {
+    position: static; /* flow under copy */
+    right: auto; width: 100%; top: auto;
+    grid-area: scope;
+    padding: 0 clamp(0rem, 3.6vw, 2.7rem);
+  }
+
+  .inner-page .hero-copy h2 { font-size: clamp(1.4rem, 2vw, 2.1rem); }
+}
+
+@media (max-width: 768px) {
+  .inner-page .page-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "balloons";
+  }
+
+  .inner-page .knowledge-graph,
+  .inner-page .hero-container { height: 42vh; }
+}
+
+/* Make grid layout active for wide screens too (unify behavior) */
+@media (min-width: 1280px) {
+  .inner-page .page-wrapper {
+    display: grid;
+    grid-template-columns: 45% 55%;
+    column-gap: 32px;
+    grid-template-areas:
+      "copy balloons";
+    align-items: start;
+  }
+  .inner-page .hero-copy { position: static; width: 100%; height: auto; grid-area: copy; }
+  .inner-page .knowledge-graph, .inner-page .hero-container { position: relative; left: auto; right: auto; width: 100%; height: 45vh; grid-area: balloons; margin-left: -32px; }
+}
+
+/* Scope bullets: bold, title format, inherit section title color */
+.inner-page .hero-scope-bullets { list-style: disc inside; margin: 0; padding: 0; }
+.inner-page .hero-scope-bullets li {
+  font-weight: 500;
+  text-transform: none;
+  color: var(--enhanced-color);
+  margin-bottom: 0.5rem;
+}
 

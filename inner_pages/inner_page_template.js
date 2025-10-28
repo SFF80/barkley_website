@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function initD3Circles() {
         const svg = d3.select('#graph-svg');
         const knowledgeGraphContainer = d3.select('.knowledge-graph');
-        const width = knowledgeGraphContainer.node().clientWidth; // reflects 70% width via CSS
+        let width = knowledgeGraphContainer.node().clientWidth; // container width (may change via CSS/grid)
         const height = knowledgeGraphContainer.node().clientHeight;
         const baseCarouselSpeed = 0.2625;
         const speedVariance = 0.4;
@@ -46,12 +46,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const knowledgeGraphRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
         const heroTextRelativeY = (heroContainerRect.top + heroContainerRect.bottom) / 2 - knowledgeGraphRect.top;
 
-        const nodeCount = 40;
+        // Responsive density and sizing
+        const containerW = width;
+        let nodeCount = 40;
+        if (containerW < 1200) nodeCount = 30;
+        if (containerW < 900) nodeCount = 22;
         const nodes = d3.range(nodeCount).map(i => ({
             id: i,
             group: Math.floor(i / 5),
             color: colors[i % colors.length],
-            baseSize: Math.random() * 89.23 + 44.62,
+            baseSize: (containerW < 1200
+              ? Math.random() * 75 + 38
+              : Math.random() * 89.23 + 44.62),
             layers: Math.floor(Math.random() * 7) + 4,
             x: Math.random() * (width + 200) - 100,
             y: heroTextRelativeY + (Math.random() - 0.5) * 60,
@@ -59,7 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
             animationOffset: Math.random() * Math.PI * 2,
             verticalSpeed: Math.random() * 0.024 + 0.012,
             verticalOffset: Math.random() * Math.PI * 2,
-            verticalAmplitude: Math.random() * 36 + 31.2,
+            verticalAmplitude: (containerW < 1200
+              ? Math.random() * 30 + 26
+              : Math.random() * 36 + 31.2),
             horizontalSpeed: baseCarouselSpeed + (Math.random() - 0.5) * speedVariance,
             // Approximate maximum outer radius, including breathing scale
             maxRadius: (Math.random() * 89.23 + 44.62) * 0.8 * 1.3 // fallback; refined below per-group
@@ -92,8 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function animate(){
             carouselTime += 0.016; heroAnimationTime += 16.67;
-            const LEFT_BOUNDARY = 0; // left edge of the inner-page animation band
-            const RIGHT_BOUNDARY = width; // right edge (container width already 70% of page)
+            const GUTTER = 24; // keep balloons off text gutter
+            const LEFT_BOUNDARY = 0 + GUTTER;
+            const RIGHT_BOUNDARY = width - GUTTER;
             const FADE_LEAD = 40; // px lead so opacity is near 0 at boundary
             balloonGroups.each(function(d){
                 const group = d3.select(this);
@@ -106,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     d.isDeconstructing = true;
                     group.selectAll('circle').transition().delay(ld=>ld.deconstructionDelay).duration(600).attr('opacity',0).on('end', ld=>{ ld.isConstructed=false; });
                 }
-                if (d.x > width + 200) {
+            if (d.x > width + 200) {
                     d.x = -100 - Math.random()*50;
                     const heroRect = document.querySelector('.hero-container').getBoundingClientRect();
                     const kgRect = document.querySelector('.knowledge-graph').getBoundingClientRect();
