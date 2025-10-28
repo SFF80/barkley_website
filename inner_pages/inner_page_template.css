@@ -10,7 +10,7 @@
   color: var(--enhanced-color);
 }
 .inner-page .resources-links { display: flex; flex-wrap: wrap; gap: 1rem 2rem; }
-.inner-page .resources-links a { color: #333; text-decoration: none; font-size: 1rem; font-weight: 700; }
+.inner-page .resources-links a { color: #333; text-decoration: underline; text-decoration-color: #CFCFCF; text-decoration-thickness: 1px; text-underline-offset: 2px; font-size: 1rem; font-weight: 400; }
 .inner-page .resources-links a:hover { color: #666; }
 
 /* Align footer (section 5) left padding with resources (section 4) */
