@@ -3,6 +3,41 @@
 .inner-page .knowledge-graph { left: auto; right: 0; width: 70%; }
 .inner-page .hero-container { left: auto; right: 0; width: 70%; }
 
+/* Left hero copy column overlayed in hero band */
+.inner-page .hero-copy {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 75vh;
+  display: flex;
+  align-items: center;
+  pointer-events: none; /* do not block balloons */
+}
+.inner-page .hero-copy-inner {
+  pointer-events: auto;
+  /* match main's 2rem left padding + data-section's clamp left padding */
+  padding-left: calc(2rem + clamp(0rem, 3.6vw, 2.7rem));
+  padding-right: clamp(0rem, 3.6vw, 2.7rem);
+  color: #666; /* match body text color below */
+}
+.inner-page .hero-copy h2 {
+  font-size: 2.1rem;
+  font-weight: 300; /* match data-section h2 weight */
+  letter-spacing: 0.1em; /* match data-section h2 */
+  margin-bottom: 1rem;
+}
+.inner-page .hero-copy p {
+  font-size: 1.1rem; /* match data-section p */
+  line-height: 1.28; /* 20% tighter than 1.6 */
+  margin-bottom: 0.8rem;
+}
+
+/* Reduce the size of the lower section title (inner pages only) */
+.inner-page .data-section h2 { font-size: 1.6rem; }
+/* Reduce body line-height across inner page content by 20% */
+.inner-page .data-section p { line-height: 1.28; }
+
 /* Example place for future inner-page-only tweaks without touching landing page */
 .inner-page .data-section h2 { /* currently inherits global styles */ }
 
