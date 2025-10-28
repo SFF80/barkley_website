@@ -564,7 +564,7 @@ h1, h2, h3 {
 
 .site-map-links {
     display: flex;
-    gap: 2rem;
+    gap: 1rem; /* reduced horizontal gap by 50% */
     flex-wrap: wrap;
 }
 
@@ -574,6 +574,7 @@ h1, h2, h3 {
     font-size: 1rem;
     font-weight: 400;
     transition: color 0.3s ease;
+    font-family: 'Montserrat', Arial, sans-serif; /* match disclaimer font */
 }
 
     .site-map-links a:hover {
@@ -617,9 +618,10 @@ h1, h2, h3 {
     padding-left: clamp(2.0625rem, calc(3.6vw + 2.0625rem), 5.0625rem);
 }
 .resources-links {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    display: flex;            /* match Site Map: horizontal, wrapping */
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2rem;
 }
 .resources-links a {
     font-weight: 400;
@@ -628,6 +630,8 @@ h1, h2, h3 {
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
     color: #333;
+    font-size: 0.9rem; /* 10% smaller than typical 1rem links */
+    font-family: 'Montserrat', Arial, sans-serif; /* lock to body font */
 }
 
 /* Responsive Design for Grey Navigation */

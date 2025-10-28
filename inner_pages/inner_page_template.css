@@ -9,8 +9,8 @@
   margin-bottom: 1rem;
   color: var(--enhanced-color);
 }
-.inner-page .resources-links { display: flex; flex-wrap: wrap; gap: 1rem 2rem; }
-.inner-page .resources-links a { color: #333; text-decoration: underline; text-decoration-color: #CFCFCF; text-decoration-thickness: 1px; text-underline-offset: 2px; font-size: 1rem; font-weight: 400; }
+.inner-page .resources-links { display: flex; flex-wrap: wrap; gap: 2rem; }
+.inner-page .resources-links a { color: #333; text-decoration: underline; text-decoration-color: #CFCFCF; text-decoration-thickness: 1px; text-underline-offset: 2px; font-size: 0.9rem; font-weight: 400; font-family: 'Montserrat', Arial, sans-serif; }
 .inner-page .resources-links a:hover { color: #666; }
 
 /* Align footer (section 5) left padding with resources (section 4) */
@@ -139,6 +139,8 @@
 }
 
 @media (max-width: 768px) {
+  /* Stack resources vertically on small screens, like Site Map */
+  .inner-page .resources-links { flex-direction: column; gap: 1rem; }
   /* Do not stack balloons below text; overlap with text on top */
   .inner-page .page-wrapper {
     grid-template-columns: 1fr;
