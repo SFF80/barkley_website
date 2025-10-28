@@ -205,7 +205,21 @@ h1, h2, h3 {
     text-transform: lowercase;
     line-height: 1;
     margin-right: auto; /* push links to the right while keeping brand left */
+    text-decoration: none; /* clickable wordmark should not underline */
+    color: inherit; /* inherit nav text color */
 }
+/* Ensure no underline in any link state for the wordmark */
+.nav-brand:link,
+.nav-brand:visited,
+.nav-brand:hover,
+.nav-brand:active { text-decoration: none; color: inherit; }
+
+/* Force-remove underline across browsers for clickable wordmark */
+.header .nav a.nav-brand,
+.header .nav a.nav-brand:link,
+.header .nav a.nav-brand:visited,
+.header .nav a.nav-brand:hover,
+.header .nav a.nav-brand:active { text-decoration: none !important; color: inherit !important; }
 
 .nav-letter { display: inline-block; }
 .nav-letter.b { color: #87CEEB; }      /* light blue */
