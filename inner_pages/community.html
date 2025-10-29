@@ -10,6 +10,23 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="./inner_page_template.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      /* Community-only: remove any thin borders/outlines around the SVG or background image */
+      .inner-page .knowledge-graph,
+      .inner-page .knowledge-graph #graph-svg,
+      .inner-page .knowledge-graph image,
+      .inner-page .knowledge-graph rect {
+        border: 0 !important;
+        outline: none !important;
+        stroke: none !important;
+        box-shadow: none !important;
+      }
+      /* Ensure Section 2 text is always above balloons (Community only) */
+      .inner-page .knowledge-graph { z-index: 0 !important; }
+      .inner-page .hero-container { z-index: 0 !important; }
+      .inner-page .hero-copy { position: relative; z-index: 6 !important; }
+      .inner-page .hero-copy::after { z-index: 1 !important; }
+    </style>
 </head>
 <body class="inner-page preload">
     <div class="page-wrapper">
@@ -102,10 +119,10 @@
       (function () {
         function loadGolden() {
           try {
-            document.write('\u003Cscript src="./inner_page_template.js"\u003E\u003C/script\u003E');
+            document.write('\u003Cscript src="./inner_page_community.js"\u003E\u003C/script\u003E');
           } catch (_) {
             var s = document.createElement('script');
-            s.src = './inner_page_template.js';
+            s.src = './inner_page_community.js';
             s.defer = true;
             document.head.appendChild(s);
           }
