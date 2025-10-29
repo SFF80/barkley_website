@@ -185,10 +185,12 @@ document.addEventListener('DOMContentLoaded', function() {
             verticalAmplitude: (containerW < 1200
               ? Math.random() * 30 + 26
               : Math.random() * 36 + 31.2),
-            // Community-only: widen horizontal velocity range (min +15%, max +5%)
+            // Community-only: widen uniform band for horizontal speed
+            // Option 2: expand variance band by 50%, then apply prior min/max scaling
             horizontalSpeed: (function(){
-              const minSpeed = (baseCarouselSpeed - 0.5 * speedVariance) * 1.15; // +15% to minimum
-              const maxSpeed = (baseCarouselSpeed + 0.5 * speedVariance) * 1.05; // +5% to maximum
+              const spread = 0.5 * speedVariance * 1.5; // +50% spread
+              const minSpeed = (baseCarouselSpeed - spread) * 1.15; // keep +15% to minimum
+              const maxSpeed = (baseCarouselSpeed + spread) * 1.05; // keep +5% to maximum
               return minSpeed + Math.random() * (maxSpeed - minSpeed);
             })(),
             // Approximate maximum outer radius, including breathing scale
