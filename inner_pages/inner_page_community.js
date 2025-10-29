@@ -164,9 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Responsive density and sizing (Section 2 only)
         const containerW = width;
-        let nodeCount = 40;
-        if (containerW < 1200) nodeCount = 30;
-        if (containerW < 900) nodeCount = 22;
+        // Community-only: increase min and max counts by ~20% (rounded up)
+        let nodeCount = 48; // was 40
+        if (containerW < 1200) nodeCount = 36; // was 30
+        if (containerW < 900) nodeCount = 27; // was 22
         const nodes = d3.range(nodeCount).map(i => ({
             id: i,
             group: Math.floor(i / 5),
