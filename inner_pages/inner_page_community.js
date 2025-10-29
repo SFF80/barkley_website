@@ -94,6 +94,24 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr('height', height + 2)
             .attr('fill', 'url(#edgeFadeRightGradient)');
 
+        // Bottom fade: vertical gradient (white -> black) over 140px from the bottom edge
+        const bottomFadeGradient = defs.append('linearGradient')
+            .attr('id', 'edgeFadeBottomGradient')
+            .attr('gradientUnits', 'userSpaceOnUse')
+            .attr('x1', 0)
+            .attr('y1', height - 140)
+            .attr('x2', 0)
+            .attr('y2', height + 2);
+        bottomFadeGradient.append('stop').attr('offset', '0%').attr('stop-color', 'white');
+        bottomFadeGradient.append('stop').attr('offset', '100%').attr('stop-color', 'black');
+        // Reverted: disable bottom fade effect
+        edgeFadeMask.append('rect')
+            .attr('x', pictureX)
+            .attr('y', height)
+            .attr('width', pictureWidth)
+            .attr('height', 0)
+            .attr('fill', 'white');
+
         // ClipPath made of balloon circles so the image only shows under balloons
         const imageClip = defs.append('clipPath')
             .attr('id', 'balloonImageClip')
@@ -166,7 +184,12 @@ document.addEventListener('DOMContentLoaded', function() {
             verticalAmplitude: (containerW < 1200
               ? Math.random() * 30 + 26
               : Math.random() * 36 + 31.2),
-            horizontalSpeed: baseCarouselSpeed + (Math.random() - 0.5) * speedVariance,
+            // Community-only: widen horizontal velocity range (min +15%, max +5%)
+            horizontalSpeed: (function(){
+              const minSpeed = (baseCarouselSpeed - 0.5 * speedVariance) * 1.15; // +15% to minimum
+              const maxSpeed = (baseCarouselSpeed + 0.5 * speedVariance) * 1.05; // +5% to maximum
+              return minSpeed + Math.random() * (maxSpeed - minSpeed);
+            })(),
             // Approximate maximum outer radius, including breathing scale
             maxRadius: (Math.random() * 89.23 + 44.62) * 0.8 * 1.3 // fallback; refined below per-group
         }));
@@ -207,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
             d.maxRadius = Math.max(d.maxRadius || 0, computedMax * 1.3);
         });
 
-        // Build mask layers per balloon to create increasing transparency toward the center via overlap
+        // Build mask layers but do NOT auto-materialize; gating happens in shouldConstruct below
         maskGroups.each(function(d){
             const group = d3.select(this);
             const maxLayer = d.layers - 1;
@@ -223,13 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .attr('r', 0)
                     .attr('fill', 'black')
                     .attr('opacity', 0)
-                    .datum({ layer, layerSize, maskAlpha, constructionDelay, deconstructionDelay, isConstructed:false })
-                    .transition()
-                    .delay(constructionDelay)
-                    .duration(720)
-                    .attr('r', layerSize)
-                    .attr('opacity', maskAlpha)
-                    .on('end', function(){ const ld = d3.select(this).datum(); ld.isConstructed = true; });
+                    .datum({ layer, layerSize, maskAlpha, constructionDelay, deconstructionDelay, isConstructed:false });
             }
         });
 
