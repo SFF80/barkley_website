@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (knowledgeTitle) knowledgeTitle.style.color = enhancedColor;
         // Expose enhanced color to CSS variables so multiple titles match exactly
         document.documentElement.style.setProperty('--enhanced-color', enhancedColor);
+        if (document.body.classList.contains('capability-page')) {
+            const descriptorColor = getDarkestColor(colors) || '#061036';
+            document.documentElement.style.setProperty('--capability-descriptor-color', descriptorColor);
+        }
         const heroCopyTitle = document.querySelector('.hero-copy h2');
         if (heroCopyTitle) heroCopyTitle.style.color = enhancedColor;
         const resourcesTitle = document.querySelector('.resources-section h3');
@@ -183,6 +187,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         animate();
+
+        function adjustColorLuminance(hex, luminance) {
+            if (typeof hex !== 'string') return null;
+            let normalized = hex.replace(/[^0-9a-f]/gi, '');
+            if (normalized.length === 3) {
+                normalized = normalized.split('').map(ch => ch + ch).join('');
+            }
+            if (normalized.length !== 6) return null;
+            const factor = Math.max(-1, Math.min(1, luminance || 0));
+            let result = '#';
+            for (let i = 0; i < 3; i++) {
+                const channel = parseInt(normalized.substr(i * 2, 2), 16);
+                if (Number.isNaN(channel)) return null;
+                const adjusted = Math.max(0, Math.min(255, Math.round(channel + channel * factor)));
+                result += adjusted.toString(16).padStart(2, '0');
+            }
+            return result;
+        }
+
+        function getDarkestColor(colorsList) {
+            if (!Array.isArray(colorsList) || colorsList.length === 0) return null;
+            let darkest = null;
+            let lowestLuminance = Infinity;
+            colorsList.forEach(color => {
+                const luminance = getRelativeLuminance(color);
+                if (luminance !== null && luminance < lowestLuminance) {
+                    lowestLuminance = luminance;
+                    darkest = color;
+                }
+            });
+            return darkest;
+        }
+
+        function getRelativeLuminance(hex) {
+            if (typeof hex !== 'string') return null;
+            let normalized = hex.replace(/[^0-9a-f]/gi, '');
+            if (normalized.length === 3) {
+                normalized = normalized.split('').map(ch => ch + ch).join('');
+            }
+            if (normalized.length !== 6) return null;
+            const channels = [0, 1, 2].map(i => parseInt(normalized.substr(i * 2, 2), 16) / 255);
+            if (channels.some(c => Number.isNaN(c))) return null;
+            const srgb = channels.map(component => component <= 0.03928 ? component / 12.92 : Math.pow((component + 0.055) / 1.055, 2.4));
+            return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+        }
     }
 });
 

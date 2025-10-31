@@ -14,30 +14,35 @@
       .capability-page .hero-container { position: relative; }
       .capability-page .hero-overlay-title {
         position: absolute;
-        top: clamp(1.25rem, 7vh, 3.75rem);
+        top: clamp(1.15rem, 6.8vh, 3.4rem);
         right: clamp(1.5rem, 4vw, 4rem);
-        width: min(22rem, 52%);
+        width: min(21.5rem, 50%);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.42rem;
         text-align: right;
-        font-size: 1.1rem;
-        line-height: 1.32;
+        font-size: 1.06rem;
+        line-height: 1.24;
         font-weight: 500;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--enhanced-color);
+        color: var(--capability-descriptor-color, var(--enhanced-color));
         z-index: 4;
         pointer-events: none;
-        white-space: normal;
       }
+      .capability-page .hero-overlay-title span { display: block; white-space: nowrap; }
       @media (max-width: 1180px) {
         .capability-page .hero-overlay-title {
-          width: min(18rem, 56%);
-          line-height: 1.33;
+          width: min(19.5rem, 56%);
+          gap: 0.38rem;
         }
       }
       @media (max-width: 1024px) {
         .capability-page .hero-overlay-title {
-          width: min(15.75rem, 60%);
-          line-height: 1.35;
+          width: min(17rem, 60%);
+          font-size: 1.02rem;
+          line-height: 1.28;
         }
       }
       @media (max-width: 768px) {
@@ -51,7 +56,11 @@
     <div class="page-wrapper">
         <div class="knowledge-graph"><svg id="graph-svg"></svg></div>
         <div id="hero-container" class="hero-container">
-            <div class="hero-overlay-title">Impact focused, package of team and technology</div>
+            <div class="hero-overlay-title">
+                <span>A package of team and technology</span>
+                <span>Impact focused</span>
+                <span>Lean, precise, positive</span>
+            </div>
         </div>
         <div class="hero-copy">
             <div class="hero-copy-inner">
