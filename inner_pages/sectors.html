@@ -10,11 +10,58 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="./inner_page_template.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      .sectors-page .hero-container { position: relative; }
+      .sectors-page .hero-overlay-title {
+        position: absolute;
+        top: clamp(1.15rem, 6.8vh, 3.4rem);
+        right: clamp(1.5rem, 4vw, 4rem);
+        width: min(21.5rem, 50%);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.42rem;
+        text-align: right;
+        font-size: 1.06rem;
+        line-height: 1.24;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--sectors-descriptor-color, #061036);
+        z-index: 4;
+        pointer-events: none;
+      }
+      .sectors-page .hero-overlay-title span { display: block; white-space: nowrap; }
+      @media (max-width: 1180px) {
+        .sectors-page .hero-overlay-title {
+          width: min(19.5rem, 56%);
+          gap: 0.38rem;
+        }
+      }
+      @media (max-width: 1024px) {
+        .sectors-page .hero-overlay-title {
+          width: min(17rem, 60%);
+          font-size: 1.02rem;
+          line-height: 1.28;
+        }
+      }
+      @media (max-width: 768px) {
+        .sectors-page .hero-overlay-title {
+          display: none;
+        }
+      }
+    </style>
 </head>
-<body class="inner-page preload">
+<body class="inner-page sectors-page preload">
     <div class="page-wrapper">
         <div class="knowledge-graph"><svg id="graph-svg"></svg></div>
-        <div id="hero-container" class="hero-container"></div>
+        <div id="hero-container" class="hero-container">
+            <div class="hero-overlay-title">
+                <span>A package of team and technology</span>
+                <span>Impact focused</span>
+                <span>Lean, precise, positive</span>
+            </div>
+        </div>
         <div class="hero-copy">
             <div class="hero-copy-inner">
                 <h2>SECTORS</h2>

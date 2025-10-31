@@ -34,10 +34,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (knowledgeTitle) knowledgeTitle.style.color = enhancedColor;
         // Expose enhanced color to CSS variables so multiple titles match exactly
         document.documentElement.style.setProperty('--enhanced-color', enhancedColor);
-        if (document.body.classList.contains('capability-page')) {
-            const descriptorColor = getDarkestColor(colors) || '#061036';
-            document.documentElement.style.setProperty('--capability-descriptor-color', descriptorColor);
-        }
+        const descriptorConfigs = [
+            { className: 'capability-page', varName: '--capability-descriptor-color' },
+            { className: 'platform-page', varName: '--platform-descriptor-color' },
+            { className: 'sectors-page', varName: '--sectors-descriptor-color' },
+            { className: 'assurance-page', varName: '--assurance-descriptor-color' }
+        ];
+        const darkest = getDarkestColor(colors) || '#061036';
+        descriptorConfigs.forEach(({ className, varName }) => {
+            if (document.body.classList.contains(className)) {
+                document.documentElement.style.setProperty(varName, darkest);
+            }
+        });
         const heroCopyTitle = document.querySelector('.hero-copy h2');
         if (heroCopyTitle) heroCopyTitle.style.color = enhancedColor;
         const resourcesTitle = document.querySelector('.resources-section h3');
