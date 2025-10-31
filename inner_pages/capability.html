@@ -10,11 +10,49 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="./inner_page_template.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      .capability-page .hero-container { position: relative; }
+      .capability-page .hero-overlay-title {
+        position: absolute;
+        top: clamp(1.25rem, 7vh, 3.75rem);
+        right: clamp(1.5rem, 4vw, 4rem);
+        width: min(22rem, 52%);
+        text-align: right;
+        font-size: 1.1rem;
+        line-height: 1.32;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--enhanced-color);
+        z-index: 4;
+        pointer-events: none;
+        white-space: normal;
+      }
+      @media (max-width: 1180px) {
+        .capability-page .hero-overlay-title {
+          width: min(18rem, 56%);
+          line-height: 1.33;
+        }
+      }
+      @media (max-width: 1024px) {
+        .capability-page .hero-overlay-title {
+          width: min(15.75rem, 60%);
+          line-height: 1.35;
+        }
+      }
+      @media (max-width: 768px) {
+        .capability-page .hero-overlay-title {
+          display: none;
+        }
+      }
+    </style>
 </head>
-<body class="inner-page preload">
+<body class="inner-page capability-page preload">
     <div class="page-wrapper">
         <div class="knowledge-graph"><svg id="graph-svg"></svg></div>
-        <div id="hero-container" class="hero-container"></div>
+        <div id="hero-container" class="hero-container">
+            <div class="hero-overlay-title">Impact focused, package of team and technology</div>
+        </div>
         <div class="hero-copy">
             <div class="hero-copy-inner">
                 <h2>CAPABILITY</h2>
