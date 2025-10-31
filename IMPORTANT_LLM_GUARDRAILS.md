@@ -84,7 +84,7 @@
   - `index.html`
   - `styles.css`
   - `script.js`
-  - Secondary pages with placeholder content: `about.html`, `services.html`, `portfolio.html`, `contact.html`, `blog.html`
+- Secondary pages with placeholder content are no longer maintained; use the inner page templates under `inner_pages/` when new sections are required
 - CDN: `<script src="https://d3js.org/d3.v7.min.js"></script>` loaded before `script.js`
 - Load order: include `styles.css` in `<head>`, D3 before `script.js`, `script.js` just before `</body>`
 
